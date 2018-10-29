@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName", "NonAsciiCharacters")
+
 package com.nectar.measured.units
 
 import com.nectar.measured.JsName
@@ -8,41 +10,117 @@ import kotlin.test.expect
  * Created by Nicholas Eddy on 2/18/18.
  */
 
-private interface Something
-private interface SomethingElse
+private class UnitA: Unit {
+    constructor(suffix: String               ): super(suffix       )
+    constructor(suffix: String, ratio: Double): super(suffix, ratio)
+
+    operator fun div(other: UnitA) = ratio / other.ratio
+}
+
+private class UnitB: Unit {
+    constructor(suffix: String               ): super(suffix       )
+    constructor(suffix: String, ratio: Double): super(suffix, ratio)
+
+    operator fun div(other: UnitA) = ratio / other.ratio
+}
 
 class UnitTests {
-    @Test
-    @JsName("defaultMultiplierIs1")
-    fun `default multiplier is 1`() {
-        val a = Unit<Something>("a")
+    @Test @JsName("defaultRatioIs1")
+    fun `default ratio is 1`() {
+        val a = object: Unit("a") {}
 
-        expect(1.0, "$a.multiplier") { a.multiplier }
+        expect(1.0, "$a.ratio") { a.ratio }
     }
 
-    @Test
-    @JsName("divWorks")
+    @Test @JsName("divWorks")
     fun `div works`() {
-        val a = Unit<Something>("a", 10.0)
-        val b = Unit<Something>("b",  1.0)
+        val a = UnitA("a", 10.0)
+        val b = UnitA("b",  1.0)
 
         expect(10.0, "$a / $b") { a / b }
     }
 
-    @Test
-    @JsName("toStringWorks")
+    @Test @JsName("toStringWorks")
     fun `toString works`() {
-        val a = Unit<Something>("description", 10.0)
+        val a = object: Unit("description", 10.0) {}
 
         expect("description", "$a.toString()") { a.toString() }
     }
 
-    @Test
-    @JsName("comparisonsWork")
+    @Test @JsName("comparisonsWork")
     fun `comparisons work`() {
-        val a = Unit<Something>("a", 10.0)
-        val b = Unit<Something>("b",  1.0)
-        val c = Unit<Something>("a", 10.0)
+        val a = UnitA("a", 10.0)
+        val b = UnitA("b",  1.0)
+        val c = UnitA("a", 10.0)
+
+        expect(true,  "$a > $b" ) { a  > b }
+        expect(false, "$a < $b" ) { a  < b }
+        expect(true,  "$a == $a") { a == a }
+        expect(false, "$a == $b") { a == b }
+        expect(true,  "$a == $c") { a == c }
+    }
+}
+
+class UnitRatioTests {
+    @Test @JsName("defaultMultiplierIs1")
+    fun `default ratio is 1`() {
+        val a = UnitRatio(UnitA("a"), UnitB("b"))
+
+        expect(1.0, "$a.ratio") { a.ratio }
+    }
+
+    @Test @JsName("doubleReciprocal")
+    fun `1 ÷ (1 ÷ a) == a`() {
+        val a = UnitRatio(UnitA("a"), UnitB("b"))
+
+        expect(a, "$a.reciprocal.reciprocal") { a.reciprocal.reciprocal }
+    }
+
+//    @Test @JsName("divAWorks")
+//    fun `(A÷B) ÷ A = 1÷B`() {
+//        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
+//        val b = UnitB("a", 10.0)
+//
+//        expect(1 * Unit("b"), "$a / $b") { a / b }
+//    }
+
+    @Test @JsName("timesBWorks")
+    fun `(A÷B) * B = A`() {
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
+        val b = UnitB("b",  1.0)
+
+        expect(1 * UnitA("a", 10.0), "$a * $b") { a * b }
+    }
+
+    @Test @JsName("timesInverseWorks")
+    fun `(A÷B) * (B÷A) = 1`() {
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
+
+        expect(1.0, "$a * 1/$a") { a * a.reciprocal }
+    }
+
+    @Test @JsName("divSelfWorks")
+    fun `(A÷B) ÷ (A÷B) = 1`() {
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
+
+        expect(1.0, "$a / $a") { a / a }
+    }
+
+    @Test @JsName("toStringWorks")
+    fun `toString works`() {
+        val a     = UnitA("a", 10.0)
+        val b     = UnitB("b")
+        val ratio = UnitRatio(a, b)
+
+        ratio.let            { expect("$a/$b", "$it.toString()") { it.toString() } }
+        ratio.reciprocal.let { expect("$b/$a", "$it.toString()") { it.toString() } }
+    }
+
+    @Test @JsName("comparisonsWork")
+    fun `comparisons work`() {
+        val a = UnitRatio(UnitA("a1", 10.0), UnitB("b"))
+        val b = UnitRatio(UnitA("a2",  1.0), UnitB("b"))
+        val c = UnitRatio(UnitA("a1", 10.0), UnitB("b"))
 
         expect(true,  "$a > $b" ) { a  > b }
         expect(false, "$a < $b" ) { a  < b }
@@ -53,30 +131,28 @@ class UnitTests {
 }
 
 class MeasureTests {
-    @Test
-    @JsName("zeroWorks")
+    @Test @JsName("zeroWorks")
     fun `zero works`() {
-        val unitA = Unit<Something>("a", 10.0)
-        val unitB = Unit<Something>("b",  1.0)
+        val unitA = UnitA("a", 10.0)
+        val unitB = UnitA("b",  1.0)
 
-        val zero     = Measure.zero<Something>()
+        val zero     = 0 * unitA
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
         val measureC = Measure( 0.0, unitB)
         val measureD = Measure( 0.0, unitA)
 
-        expect(true,  "$measureA > $zero"     ) { measureA  > zero     }
-        expect(true,  "$measureB > $zero"     ) { measureB  > zero     }
-        expect(true,  "$measureC == $zero"    ) { measureC == zero     }
-//        expect(false, "$measureC == $measureD") { measureC == measureD }
+        expect(true, "$measureA > $zero"     ) { measureA  > zero     }
+        expect(true, "$measureB > $zero"     ) { measureB  > zero     }
+        expect(true, "$measureC == $zero"    ) { measureC == zero     }
+//        expect(true, "$measureC == $measureD") { measureC == measureD }
     }
 
-    @Test
-    @JsName("comparisonsWork")
+    @Test @JsName("comparisonsWork")
     fun `comparisons work`() {
-        val unitA = Unit<Something>("a", 10.0)
-        val unitB = Unit<Something>("b",  1.0)
-        val unitC = Unit<SomethingElse>("c")
+        val unitA = UnitA("a", 10.0)
+        val unitB = UnitA("b",  1.0)
+        val unitC = UnitA("c")
 
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
@@ -92,11 +168,10 @@ class MeasureTests {
 //        expect(false, "$measureB == $measureC") { measureB == measureC }
     }
 
-    @Test
-    @JsName("plusMinusOperatorsWork")
+    @Test @JsName("plusMinusOperatorsWork")
     fun `+ -`() {
-        val unitA = Unit<Something>("a", 10.0)
-        val unitB = Unit<Something>("b",  1.0)
+        val unitA = UnitA("a", 10.0)
+        val unitB = UnitA("b",  1.0)
 
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
@@ -105,43 +180,41 @@ class MeasureTests {
         expect(Measure( 90.0, unitB)) { measureA - measureB }
     }
 
-    @Test
-    @JsName("unaryMinusOperatorsWork")
+    @Test @JsName("unaryMinusOperatorsWork")
     fun `unary -`() {
-        val unit = Unit<Something>("a")
+        val unit = UnitA("a")
 
         val measure = Measure(10.0, unit)
 
         expect(Measure(-10.0, unit)) { -measure }
     }
 
-    @Test
-    @JsName("timesDivideOperatorsWork")
+    @Test @JsName("timesDivideOperatorsWork")
     fun `* ÷`() {
-        val op: (Operation<Something>) -> kotlin.Unit = {
-            val unit = Unit<Something>("a")
-            val start = 10.0
-            val value = 2.3
+        val op: (Operation<UnitA>) -> kotlin.Unit = {
+            val unit   = UnitA("a")
+            val start  = 10.0
+            val value  = 2.3
             val measure = Measure(start, unit)
 
-            expect(Measure(it((measure `in` unit), value), unit), { it(measure, value) })
+            expect(Measure(it((measure `in` unit), value), unit)) { it(measure, value) }
         }
 
-        listOf(times, divide).forEach(op)
+        listOf(com.nectar.measured.units.times, divide).forEach(op)
     }
 }
 
-interface Operation<T> {
+interface Operation<T: Unit> {
     operator fun invoke(first: Double,     second: Double): Double
     operator fun invoke(first: Measure<T>, second: Double): Measure<T>
 }
 
-private val times: Operation<Something> = object: Operation<Something> {
-    override fun invoke(first: Double,             second: Double) = first * second
-    override fun invoke(first: Measure<Something>, second: Double) = first * second
+private val times = object: Operation<UnitA> {
+    override fun invoke(first: Double,         second: Double) = first * second
+    override fun invoke(first: Measure<UnitA>, second: Double) = first * second
 }
 
-private val divide: Operation<Something> = object: Operation<Something> {
-    override fun invoke(first: Double,             second: Double) = first / second
-    override fun invoke(first: Measure<Something>, second: Double) = first / second
+private val divide = object: Operation<UnitA> {
+    override fun invoke(first: Double,         second: Double) = first / second
+    override fun invoke(first: Measure<UnitA>, second: Double) = first / second
 }

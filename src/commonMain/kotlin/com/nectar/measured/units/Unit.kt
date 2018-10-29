@@ -3,307 +3,328 @@ package com.nectar.measured.units
 import com.nectar.measured.JvmName
 
 /**
- * Created by Nicholas Eddy on 10/19/17.
+ * Created by Nicholas Eddy on 4/4/18.
  */
-open class Unit<T>(val display: String, internal val multiplier: Double = 1.0): Comparable<Unit<T>> {
-    operator fun     div(other: Unit<T>): Double          = multiplier / other.multiplier
-    operator fun <D> div(other: Unit<D>): UnitRatio<T, D> = UnitRatio(this, other)
 
-    operator fun     times(other: Unit<T>        ): UnitProduct<T, T> = UnitProduct(this, other)
-    operator fun <N> times(other: UnitRatio<N, T>): Measure<N>        = other * this
+abstract class Unit(val suffix: String, val ratio: Double = 1.0) {
+    internal fun convertToBaseUnit  (amount: Double) = amount * ratio
+    internal fun convertFromBaseUnit(amount: Double) = amount / ratio
 
-    override fun compareTo(other: Unit<T>): Int = multiplier.compareTo(other.multiplier)
+    internal open val spaceBetweenMagnitude = true
 
-    override fun toString() = display
+    override fun toString() = suffix
+
+    override fun hashCode(): Int {
+        var result = suffix.hashCode()
+        result = 31 * result + ratio.hashCode()
+        result = 31 * result + spaceBetweenMagnitude.hashCode()
+        return result
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Unit<*>) return false
+        if (other !is Unit) return false
 
-        if (display    != other.display   ) return false
-        if (multiplier != other.multiplier) return false
+        if (suffix != other.suffix) return false
+        if (ratio  != other.ratio ) return false
+        if (spaceBetweenMagnitude != other.spaceBetweenMagnitude) return false
 
         return true
     }
 
-    override fun hashCode(): Int {
-        var result = display.hashCode()
-        result = 31 * result + multiplier.hashCode()
-        return result
-    }
+    protected open operator fun div(other: Unit) = ratio / other.ratio
 }
 
-open class UnitProduct<A, B>(private val first: Unit<A>, private val second: Unit<B>): Comparable<UnitProduct<A, B>> {
-    private  val display    = if (first == second) " ${first.toString().trim()}²" else " ${first.toString().trim()}*${second.toString().trim()}"
-    internal val multiplier = first.multiplier * second.multiplier
+class InverseUnit<T: Unit> (unit: T): Unit("1/${unit.suffix}", 1 / unit.ratio)
 
-    operator fun div(other: UnitProduct<A, B>): Double = multiplier / other.multiplier
+operator fun <A: Unit, B: A> A.compareTo(other: B) = ratio.compareTo(other.ratio)
 
-    @JvmName("divNumerator")
-    operator fun div(other: Unit<A>): Measure<B> = first.multiplier / other.multiplier * second
+/**
+ * Creates a QuotientUnit using the division operator, eg Mile / Hour
+ */
+operator fun <A: Unit, B: Unit> A.div(other: B) = UnitRatio(this, other)
 
-    operator fun div(other: Unit<B>): Measure<A> = second.multiplier / other.multiplier * first
+operator fun <A: Unit, B: Unit> A.times(other: UnitRatio<B, A>) = this.ratio / other.denominator.ratio * other.numerator
 
-    override fun compareTo(other: UnitProduct<A, B>): Int = multiplier.compareTo(other.multiplier)
+/**
+ * For units after multiplication
+ */
+class UnitProduct<A: Unit, B: Unit>(val a: A, val b: B): Unit(if (a==b) "($a)^2" else "$a$b", a.ratio * b.ratio)
 
-    override fun toString() = display
+typealias Square<T> = UnitProduct<T, T>
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is UnitProduct<*, *>) return false
+@JvmName("div1") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: A                ) = a.ratio / other.ratio * b
+@JvmName("div2") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: B                ) = b.ratio / other.ratio * a
+@JvmName("div3") operator fun <A: Unit>                     UnitProduct<A, A>.div(other: A                ) = a.ratio / other.ratio * b
 
-        if (display    != other.display   ) return false
-        if (multiplier != other.multiplier) return false
+@JvmName("div1") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<C, B>) = a / other.a
+@JvmName("div2") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<C, A>) = b / other.a
+@JvmName("div3") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<B, C>) = a / other.b
+@JvmName("div4") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<A, C>) = b / other.b
+@JvmName("div5") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<A, A>) = b / other.b
+@JvmName("div6") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<B, A>) = ratio / other.ratio
+@JvmName("div7") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<A, B>) = ratio / other.ratio
+@JvmName("div8") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<B, B>) = b.ratio / other.b.ratio * (a / other.a)
 
-        return true
-    }
+/**
+ * Create a ProductUnit using multiplication operator, eg Metre * Metre for area
+ */
+operator fun <A: Unit, B: Unit> A.times(other: B) = UnitProduct(this, other)
+operator fun <A: Unit, B: Unit> A.div(other: UnitRatio<A, B>) = this * other.reciprocal
 
-    override fun hashCode(): Int {
-        var result = display.hashCode()
-        result = 31 * result + multiplier.hashCode()
-        return result
-    }
+/**
+ * For units after division, A/B
+ */
+class UnitRatio<A: Unit, B: Unit>(val numerator: A, val denominator: B): Unit("$numerator/$denominator", numerator.ratio / denominator.ratio) {
+    val reciprocal by lazy { UnitRatio(denominator, numerator) }
 }
 
-open class UnitRatio<N, D>(private val numerator: Unit<N>, private val denominator: Unit<D>): Comparable<UnitRatio<N, D>> {
-    private  val display    = " ${numerator.toString().trim()}/${denominator.toString().trim()}"
-    internal val multiplier = numerator.multiplier / denominator.multiplier
+/*
+ *     A | A || A | A
+ *     A | A || A | B
+ *     A | A || B | A
+ *     A | A || B | B       A | A || C | C      A | A || D | D
+ *
+ *     A | A || C | D
+ *     A | A || D | C
+ *
+ *     A | B || A | A
+ *     A | B || A | B
+ *     A | B || B | A
+ *     A | B || B | B       A | B || C | C      A | B || D | D
+ *
+ *     A | B || C | D
+ *     A | B || D | C
+ */
 
-    internal val reciprocal: UnitRatio<D, N> by lazy { UnitRatio(denominator, numerator) }
+/*
+ *     -- A | A || A | A
+ *     -- A | A || A | B
+ *     -- A | A || B | A
+ *     -- A | A || B | B       A | A || C | C      A | A || D | D
+ *
+ *     -- A | A || C | D
+ *     -- A | A || D | C
+ *
+ *     -- A | B || A | A
+ *     -- A | B || B | B       A | B || C | C      A | B || D | D
+ *
+ *     A | B || A | B
+ *     A | B || B | A
+ *     A | B || C | D       A | B || D | C
+ */
 
-    operator fun div(other: UnitRatio<N, D>): Double = multiplier / other.multiplier
+@JvmName("times1") operator fun <A: Unit, B: Unit>                   UnitRatio<A, B>.times(other: UnitRatio<A, B>) = numerator * other.numerator / (denominator * other.denominator)
+@JvmName("times2") operator fun <A: Unit, B: Unit>                   UnitRatio<A, B>.times(other: UnitRatio<B, A>) = numerator * other.numerator / (denominator * other.denominator)
+@JvmName("times3") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> UnitRatio<A, B>.times(other: UnitRatio<C, D>) = numerator * other.numerator / (denominator * other.denominator)
 
-    operator fun times(other: Unit<D>): Measure<N> = other.multiplier / denominator.multiplier * numerator
+@JvmName("div1") operator fun <A: Unit, B: Unit>                     UnitRatio<A, B>.div(other: UnitRatio<A, B>) = this * other.reciprocal
+@JvmName("div2") operator fun <A: Unit, B: Unit>                     UnitRatio<A, B>.div(other: UnitRatio<B, A>) = this * other.reciprocal
+@JvmName("div3") operator fun <A: Unit, B: Unit, C: Unit, D: Unit>   UnitRatio<A, B>.div(other: UnitRatio<C, D>) = this * other.reciprocal
 
-    override fun compareTo(other: UnitRatio<N, D>): Int = multiplier.compareTo(other.multiplier)
 
-    override fun toString() = display
+operator fun <A: Unit, B: Unit>                                    UnitRatio<A, B>.                times(other: B                 ) = other.ratio / denominator.ratio * numerator
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is UnitRatio<*, *>) return false
+@JvmName("abcb") operator fun <A: Unit, B: Unit, C: Unit>          UnitRatio<A, UnitProduct<B, C>>.times(other: B                 ) = other.ratio / denominator.a.ratio * (numerator / denominator.b)
+@JvmName("abcd") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> UnitRatio<A, UnitProduct<B, C>>.times(other: D                 ) = numerator * other / denominator
 
-        if (display    != other.display   ) return false
-        if (multiplier != other.multiplier) return false
+                 operator fun <A: Unit, B: Unit>                   UnitRatio<A, B>.                                div(other: B                 ) = numerator / (denominator * other)
+@JvmName("div1") operator fun <A: Unit, B: Unit>                   UnitRatio<UnitProduct<A, A>, UnitProduct<B, B>>.div(other: A                 ) = numerator.a.ratio / other.ratio * (numerator.b / denominator)
+@JvmName("div2") operator fun <A: Unit, B: Unit, C: Unit>          UnitRatio<UnitProduct<A, A>, UnitProduct<B, C>>.div(other: A                 ) = numerator.a.ratio / other.ratio * (numerator.b / denominator)
+@JvmName("div3") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> UnitRatio<UnitProduct<A, B>, UnitProduct<C, D>>.div(other: A                 ) = numerator.a.ratio / other.ratio * (numerator.b / denominator)
+//@JvmName("square") operator fun <A: Unit2, B: Unit2, C: Unit2> QuotientUnit<A, B>.div(other: QuotientUnit<A, C>) = this * other.denominator / other.numerator
+//@JvmName("square") operator fun <A: Unit2, B: Unit2, C: Unit2> QuotientUnit<A, B>.div(other: QuotientUnit<B, C>) = this * other.denominator / other.numerator
 
-        return true
-    }
+// m/s * (s2/m) => s
+operator fun <A: Unit, B: Unit> UnitRatio<A, B>.div(other: UnitRatio<A, Square<B>>) = numerator.ratio / other.numerator.ratio * (other.denominator / denominator)
 
-    override fun hashCode(): Int {
-        var result = display.hashCode()
-        result = 31 * result + multiplier.hashCode()
-        return result
-    }
-}
+operator fun <A: Unit, B: Unit> Measure<A>.div(other: Measure<B>) = amount / other.amount * (unit / other.unit)
 
-open class Measure<T>(internal val magnitude: Double, internal val unit: Unit<T>): Comparable<Measure<T>> {
-    override fun compareTo(other: Measure<T>) = minOf(unit, other.unit).let {
-        ((this `in` it).compareTo((other `in` it)))
-    }
+@JvmName("times1") operator fun <A: Unit, B: Unit>                   Measure<A>.                              times(other: Measure<B>              ) = amount * other.amount * (unit * other.unit)
+@JvmName("times2") operator fun <A: Unit, B: Unit>                   Measure<A>.                              times(other: Measure<UnitRatio<B, A>>) = amount * other.amount * (unit * other.unit)
+@JvmName("times3") operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<A, B>>.                times(other: Measure<B>              ) = amount * other.amount * (unit * other.unit)
+@JvmName("times4") operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<A, B>>.                times(other: Measure<UnitRatio<A, B>>) = amount * other.amount * (unit * other.unit)
+@JvmName("times5") operator fun <A: Unit, B: Unit, C: Unit>          Measure<UnitRatio<A, UnitProduct<B, C>>>.times(other: Measure<B>              ) = amount * other.amount * (unit * other.unit)
+@JvmName("times6") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> Measure<UnitRatio<A, UnitProduct<B, C>>>.times(other: Measure<D>              ) = amount * other.amount * (unit * other.unit)
 
-    val isZero     get() = magnitude == 0.0
-    val isNegative get() = magnitude <  0.0
+// TODO: Kapt code generation possible?
+@JvmName("div16") operator fun <A: Unit>                   Measure<A>.                div(other: Measure<A>                ) = amount / other.amount * (unit.ratio / other.unit.ratio)
+@JvmName("div1" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<A>                ) = amount / other.amount * (unit / other.unit)
+@JvmName("div2" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<B>                ) = amount / other.amount * (unit / other.unit)
+@JvmName("div3" ) operator fun <A: Unit, B: Unit, C: Unit> Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<C, B>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div4" ) operator fun <A: Unit, B: Unit, C: Unit> Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<C, A>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div5" ) operator fun <A: Unit, B: Unit, C: Unit> Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<B, C>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div6" ) operator fun <A: Unit, B: Unit, C: Unit> Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<A, C>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div7" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<A, A>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div8" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<UnitProduct<B, B>>) = amount / other.amount * (unit / other.unit)
 
-    operator fun times(value: Int   ): Measure<T> = magnitude * value * unit
-    operator fun times(value: Float ): Measure<T> = magnitude * value * unit
-    operator fun times(value: Long  ): Measure<T> = magnitude * value * unit
-    operator fun times(value: Double): Measure<T> = magnitude * value * unit
+@JvmName("div9" ) operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<A, B>>.                                div(other: Measure<B>                      ) = amount / other.amount * (unit / other.unit)
+@JvmName("div10") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> Measure<UnitRatio<A, B>>.                                div(other: Measure<UnitRatio<C, D>>        ) = amount / other.amount * (unit / other.unit)
+@JvmName("div11") operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<A, B>>.                                div(other: Measure<UnitRatio<A, Square<B>>>) = amount / other.amount * (unit / other.unit)
+@JvmName("div12") operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<UnitProduct<A, A>, UnitProduct<B, B>>>.div(other: Measure<A>                      ) = amount / other.amount * (unit / other.unit)
+@JvmName("div13") operator fun <A: Unit, B: Unit, C: Unit>          Measure<UnitRatio<UnitProduct<A, A>, UnitProduct<B, C>>>.div(other: Measure<A>                      ) = amount / other.amount * (unit / other.unit)
+@JvmName("div14") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> Measure<UnitRatio<UnitProduct<A, B>, UnitProduct<C, D>>>.div(other: Measure<A>                      ) = amount / other.amount * (unit / other.unit)
+@JvmName("div15") operator fun <A: Unit, B: Unit>                   Measure<A>.                                              div(other: Measure<UnitRatio<A, B>>        ) = amount / other.amount * (unit / other.unit)
 
-    operator fun times(other: Measure<T>): MeasureProduct<T, T> = (magnitude * other.magnitude) * (unit * unit)
+fun <A: Unit, B: A> minOf(a: A, b: B) = if (a < b) a else b
 
-    operator fun div  (value: Int   ): Measure<T> = magnitude / value * unit
-    operator fun div  (value: Float ): Measure<T> = magnitude / value * unit
-    operator fun div  (value: Long  ): Measure<T> = magnitude / value * unit
-    operator fun div  (value: Double): Measure<T> = magnitude / value * unit
+/**
+ * A quantity with a unit type
+ */
+class Measure<T: Unit>(val amount: Double, val unit: T): Comparable<Measure<T>> {
+    /**
+     * Convert this type into another compatible type.
+     * Type must share parent
+     * (eg Mile into Kilometer, because they both are made from Distance)
+     */
+    infix fun <A: T> `as`(other: A) = if (unit == other) this else Measure(other.convertFromBaseUnit(this.unit.convertToBaseUnit(amount)), other)
 
-    operator fun div(other: Measure<T>): Double = minOf(unit, other.unit).let {
-        (this `in` it) / (other `in` it)
-    }
+    infix fun <A: T> `in`(other: A) = amount * (unit.ratio / other.ratio)
 
-    operator fun <D> div(other: Measure<D>        ): MeasureRatio<T, D> = (unit / other.unit).let { (magnitude / other.magnitude) * it }
-    operator fun <D> div(other: MeasureRatio<T, D>): Measure<D>         = (unit * other.unit.reciprocal).let { (magnitude / other.magnitude) * it }
+    /**
+     * Add another compatible quantity to this one
+     */
+    operator fun plus(other: Measure<T>) = minOf(unit, other.unit).let { Measure((this `in` it) + (other `in` it), it) }
 
-    operator fun unaryMinus(): Measure<T> = Measure(-magnitude, unit)
+    /**
+     * Subtract a compatible quantity from this one
+     */
+    operator fun minus(other: Measure<T>) = minOf(unit, other.unit).let { Measure((this `in` it) - (other `in` it), it) }
 
-    operator fun plus(other: Measure<T>): Measure<T> {
-        val resultUnit = minOf(unit, other.unit)
+    operator fun unaryMinus(): Measure<T> = Measure(-amount, unit)
 
-        return Measure((this `in` resultUnit) + (other `in` resultUnit), resultUnit)
-    }
+    /**
+     * Multiply this by a scalar value, used for things like "double this distance",
+     * "1.5 times the speed", etc
+     */
+    operator fun times(other: Number) = amount * other.toDouble() * unit
 
-    operator fun minus(other: Measure<T>): Measure<T> = this + -other
+    /**
+     * Divide this by a scalar, used for things like "halve the speed"
+     */
+    operator fun div(other: Number) = amount / other.toDouble() * unit
 
-    infix fun `in`(other: Unit<T>): Double = magnitude * (unit / other)
-
-    infix fun `as`(other: Unit<T>): Measure<T> = if (unit == other) this else Measure(`in`(other), other)
-
-    override fun toString() = "$magnitude$unit"
+    /**
+     * Compare this value with another quantity - which must have the same type
+     * Units are converted before comparison
+     */
+    override fun compareTo(other: Measure<T>) = (this `as` other.unit).amount.compareTo(other.amount)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Measure<*>) return false
+//        if (this.amount == 0.0 && other.amount == 0.0) return true TODO: Should this be true?
 
         val resultUnit = minOf(unit, (other as Measure<T>).unit)
 
-        val a = this `as` resultUnit
+        val a = this  `as` resultUnit
         val b = other `as` resultUnit
 
-
-        if (a.magnitude != b.magnitude) return false
-//        if (unit      != other.unit     ) return false
+        if (a.amount != b.amount) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = magnitude.hashCode()
-        result = 31 * result + unit.hashCode()
-        return result
+        return unit.convertFromBaseUnit(amount).hashCode()
     }
 
-    companion object {
-        fun <T> zero(): Measure<T> {
-            return Measure(0.0, Unit(""))
-        }
+    override fun toString(): String {
+        return "$amount${if (unit.spaceBetweenMagnitude) " " else ""}${unit.suffix}"
     }
 }
 
-open class MeasureProduct<A, B>(internal val magnitude: Double, internal val unit: UnitProduct<A, B>): Comparable<MeasureProduct<A, B>> {
-    override fun compareTo(other: MeasureProduct<A, B>) = minOf(unit, other.unit).let {
-        ((this `in` it).compareTo((other `in` it)))
-    }
+/**
+ * Helpers for converting numbers into quantities
+ */
+infix fun <T: Unit> Number.into(unit: T) = Measure(this.toDouble(), unit)
 
-    val isZero     get() = magnitude == 0.0
-    val isNegative get() = magnitude <  0.0
+operator fun <T: Unit> Number.times(unit: T) = this into unit
+operator fun <T: Unit> T.times(value: Number) = value into this
+operator fun <T: Unit> T.invoke(value: Number) = value into this
 
-    operator fun times(value: Int   ): MeasureProduct<A, B> = magnitude * value * unit
-    operator fun times(value: Float ): MeasureProduct<A, B> = magnitude * value * unit
-    operator fun times(value: Long  ): MeasureProduct<A, B> = magnitude * value * unit
-    operator fun times(value: Double): MeasureProduct<A, B> = magnitude * value * unit
+fun <T: Unit> abs(value: Measure<T>) = kotlin.math.abs(value.amount) * value.unit
 
-    operator fun div  (value: Int   ): MeasureProduct<A, B> = magnitude / value * unit
-    operator fun div  (value: Float ): MeasureProduct<A, B> = magnitude / value * unit
-    operator fun div  (value: Long  ): MeasureProduct<A, B> = magnitude / value * unit
-    operator fun div  (value: Double): MeasureProduct<A, B> = magnitude / value * unit
+/**
+ * Inverse of Quantity.times(value: Number)
+ * Haven't implemented division due to no reciprocal unit
+ */
+operator fun <T: Unit> Number.times(quantity: Measure<T>) = quantity * this
 
-    operator fun div(other: MeasureProduct<A, B>): Double = minOf(unit, other.unit).let {
-        (this `in` it) / (other `in` it)
-    }
-
-    @JvmName("divSecond")
-    operator fun div(other: Measure<B>): Measure<A> = magnitude / other.magnitude * (unit / other.unit)
-
-    operator fun div(other: Measure<A>): Measure<B> = magnitude / other.magnitude * (unit / other.unit)
-
-//    operator fun <D> div(other: Measure2<T, D>): Measure<D> {
-//        return (unit * other.unit.reciprocal).let { (magnitude / other.magnitude) * it }
+//open class Distance2(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
+//    companion object {
+//        val miles       = Distance2("mi", 1609.34)
+//        val millimeters = Distance2("mm",    0.01)
+//        val centimeters = Distance2("cm",    0.10)
+//        val meters      = Distance2("m"          )
+//        val kilometers  = Distance2("km", 1000.00)
 //    }
+//
+//    operator fun div(other: Distance2) = ratio / other.ratio
+//}
 
-    operator fun unaryMinus(): MeasureProduct<A, B> = MeasureProduct(-magnitude, unit)
+//open class Time2(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
+//    companion object {
+//        val milliseconds = Time2("ms"                       )
+//        val seconds      = Time2("s",   1000.0              )
+//        val minutes      = Time2("min", 60   * seconds.ratio)
+//        val hours        = Time2("hr",  60   * minutes.ratio)
+//    }
+//
+//    operator fun div(other: Time2) = ratio / other.ratio
+//}
 
-    operator fun plus(other: MeasureProduct<A, B>): MeasureProduct<A, B> {
-        val resultUnit = minOf(unit, other.unit)
+//open class Mass(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
+//    companion object {
+//        val grams     = Mass("g"                  )
+//        val kilograms = Mass("kg", 1000.0         )
+//        val tonnes    = Mass("t",  1000.0 * 1000.0)
+//    }
+//
+//    operator fun div(other: Mass) = ratio / other.ratio
+//}
 
-        return MeasureProduct((this `in` resultUnit) + (other `in` resultUnit), resultUnit)
-    }
 
-    operator fun minus(other: MeasureProduct<A, B>): MeasureProduct<A, B> = this + -other
+operator fun Length.times(other: Time) = UnitProduct(this, other)
+operator fun Time.times(other: Length) = UnitProduct(other, this)
 
-    infix fun `in`(other: UnitProduct<A, B>): Double = magnitude * (unit / other)
+typealias Velocity     = UnitRatio<Length, Time>
+typealias Acceleration = UnitRatio<Length, Square<Time>>
 
-    infix fun `as`(other: UnitProduct<A, B>): MeasureProduct<A, B> = if (unit == other) this else MeasureProduct(`in`(other), other)
 
-    override fun toString() = "$magnitude$unit"
+fun main(args: Array<String>) {
+    val acceleration = 5 * (meters / (seconds * seconds))
+    val velocity     = 5 * (meters / seconds)
+    val timeOffset   = 5 * seconds
+    val distance     = 5 * meters
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is MeasureProduct<*, *>) return false
+    val a = distance / timeOffset
 
-        if (magnitude != other.magnitude) return false
-        if (unit      != other.unit     ) return false
+//    val distance = 10 * meters + velocity * timeOffset
 
-        return true
-    }
+//    println(velocity * timeOffset)
+//    println(acceleration * timeOffset)
+//    println(velocity * velocity / distance)
+//    println(meters * meters / (seconds * seconds) / meters)
+//    println(1 * (meters / seconds) * (1 * (meters / seconds)) / (1 * meters))
+    println((meters / seconds) / (meters / (seconds * seconds)))
+    println(velocity / acceleration)
+//    println(meters / (seconds * seconds) * seconds)
+//    println(meters * seconds / (seconds * seconds))
 
-    override fun hashCode(): Int {
-        var result = magnitude.hashCode()
-        result = 31 * result + unit.hashCode()
-        return result
-    }
+//    println(meters / (seconds * seconds) * seconds == meters * seconds / (seconds * seconds))
 }
 
-open class MeasureRatio<N, D>(internal val magnitude: Double, internal val unit: UnitRatio<N, D>): Comparable<MeasureRatio<N, D>> {
-    override fun compareTo(other: MeasureRatio<N, D>) = minOf(unit, other.unit).let {
-        ((this `in` it).compareTo((other `in` it)))
-    }
+class Bar<T: Unit>(t: T) {
+    init {
+        val timeOffset   = 5 * seconds
+        val velocity     = 5 * (t / seconds)
+        val acceleration = 5 * (t / (seconds * seconds))
 
-    val isZero     get() = magnitude == 0.0
-    val isNegative get() = magnitude <  0.0
+        val distance: Measure<T> = 10 * t + velocity * timeOffset
 
-    operator fun times(value: Int   ): MeasureRatio<N, D> = magnitude * value * unit
-    operator fun times(value: Float ): MeasureRatio<N, D> = magnitude * value * unit
-    operator fun times(value: Long  ): MeasureRatio<N, D> = magnitude * value * unit
-    operator fun times(value: Double): MeasureRatio<N, D> = magnitude * value * unit
-
-    operator fun times(other: Measure<D>): Measure<N> = magnitude * other.magnitude * (unit * other.unit)
-
-    operator fun div  (value: Int   ): MeasureRatio<N, D> = magnitude / value * unit
-    operator fun div  (value: Float ): MeasureRatio<N, D> = magnitude / value * unit
-    operator fun div  (value: Long  ): MeasureRatio<N, D> = magnitude / value * unit
-    operator fun div  (value: Double): MeasureRatio<N, D> = magnitude / value * unit
-
-    operator fun div(other: MeasureRatio<N, D>): Double = minOf(unit, other.unit).let {
-        (this `in` it) / (other `in` it)
-    }
-
-    operator fun unaryMinus(): MeasureRatio<N, D> = MeasureRatio(-magnitude, unit)
-
-    operator fun plus(other: MeasureRatio<N, D>): MeasureRatio<N, D> {
-        val resultUnit = minOf(unit, other.unit)
-
-        return MeasureRatio((this `in` resultUnit) + (other `in` resultUnit), resultUnit)
-    }
-
-    operator fun minus(other: MeasureRatio<N, D>): MeasureRatio<N, D> = this + -other
-
-    infix fun `in`(other: UnitRatio<N, D>): Double = magnitude * (unit / other)
-
-    infix fun `as`(other: UnitRatio<N, D>): MeasureRatio<N, D> = if (unit == other) this else MeasureRatio(`in`(other), other)
-
-    override fun toString() = "$magnitude$unit"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is MeasureRatio<*, *>) return false
-
-        if (magnitude != other.magnitude) return false
-        if (unit      != other.unit     ) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = magnitude.hashCode()
-        result = 31 * result + unit.hashCode()
-        return result
-    }
-
-    companion object {
-        fun <N, D> zero(): MeasureRatio<N, D> {
-            return MeasureRatio(0.0, UnitRatio(Unit(""), Unit("")))
-        }
+//        println(distance / velocity)
+//        println(velocity * velocity / distance)
+//        println(-velocity / acceleration)
     }
 }
-
-
-operator fun <T>    Number.times(value: Unit<T>          ): Measure<T>           = Measure       (this.toDouble(), value)
-operator fun <N, D> Number.times(value: UnitRatio<N, D>  ): MeasureRatio<N, D>   = MeasureRatio  (this.toDouble(), value)
-operator fun <A, B> Number.times(value: UnitProduct<A, B>): MeasureProduct<A, B> = MeasureProduct(this.toDouble(), value)
-
-operator fun <T>    Number.times(value: Measure<T>          ): Measure<T>           = value * this.toDouble()
-operator fun <N, D> Number.times(value: MeasureRatio<N, D>  ): MeasureRatio<N, D>   = value * this.toDouble()
-operator fun <A, B> Number.times(value: MeasureProduct<A, B>): MeasureProduct<A, B> = value * this.toDouble()
-
-fun <T>    abs(value: Measure<T>          ) = kotlin.math.abs(value.magnitude) * value.unit
-fun <N, D> abs(value: MeasureRatio<N, D>  ) = kotlin.math.abs(value.magnitude) * value.unit
-fun <A, B> abs(value: MeasureProduct<A, B>) = kotlin.math.abs(value.magnitude) * value.unit

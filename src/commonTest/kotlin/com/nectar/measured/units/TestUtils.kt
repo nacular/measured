@@ -6,7 +6,7 @@ import kotlin.test.expect
  * Created by Nicholas Eddy on 2/22/18.
  */
 
-fun <T> testUnit(units: Map<Unit<T>, Map<Double, Unit<T>>>) {
+fun testUnit(units: Map<Unit, Map<Double, Unit>>) {
     units.forEach { (unit, mappings) ->
         mappings.forEach { (multiplier, target) ->
             val first  = 1 * unit

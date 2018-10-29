@@ -20,37 +20,38 @@ class AngleTests {
 
     @Test @JsName("radiansConstants")
     fun `radians constants`() {
-        expect(10   * radians) { 10.radians   }
-        expect(10.0 * radians) { 10.0.radians }
-        expect(10f  * radians) { 10f.radians  }
-        expect(10L  * radians) { 10L.radians  }
+        expect(10   * radians) { 10   * radians }
+        expect(10.0 * radians) { 10.0 * radians }
+        expect(10f  * radians) { 10f  * radians }
+        expect(10L  * radians) { 10L  * radians }
     }
 
     @Test @JsName("degreesConstants")
     fun `degrees constants`() {
-        expect(10   * degrees) { 10.degrees   }
-        expect(10.0 * degrees) { 10.0.degrees }
-        expect(10f  * degrees) { 10f.degrees  }
-        expect(10L  * degrees) { 10L.degrees  }
+        expect(10   * degrees) { 10   * degrees }
+        expect(10.0 * degrees) { 10.0 * degrees }
+        expect(10f  * degrees) { 10f  * degrees }
+        expect(10L  * degrees) { 10L  * degrees }
     }
 
     @Test @JsName("mathWorks")
     fun `math works`() {
-        val angle1 = 79.degrees
-        val angle2 = 19.degrees
+        val angle1 = 79 * degrees
+        val value1 =  0.5
+        val value2 =  0.678
 
-        expect(kotlin.math.sin  (angle1.`in`(radians))) { sin  (angle1)                               }
-        expect(kotlin.math.cos  (angle1.`in`(radians))) { cos  (angle1)                               }
-        expect(kotlin.math.tan  (angle1.`in`(radians))) { tan  (angle1)                               }
-        expect(kotlin.math.asin (angle1.`in`(radians))) { asin (angle1)                               }
-        expect(kotlin.math.acos (angle1.`in`(radians))) { acos (angle1)                               }
-        expect(kotlin.math.atan (angle1.`in`(radians))) { atan (angle1)                               }
-        expect(kotlin.math.atan2(angle1.`in`(radians) ,angle2.`in`(radians))) { atan2(angle1, angle2) }
-        expect(kotlin.math.sinh (angle1.`in`(radians))) { sinh (angle1)                               }
-        expect(kotlin.math.cosh (angle1.`in`(radians))) { cosh (angle1)                               }
-        expect(kotlin.math.tanh (angle1.`in`(radians))) { tanh (angle1)                               }
-        expect(kotlin.math.asinh(angle1.`in`(radians))) { asinh(angle1)                               }
-        expect(kotlin.math.acosh(angle1.`in`(radians))) { acosh(angle1)                               }
-        expect(kotlin.math.atanh(angle1.`in`(radians))) { atanh(angle1)                               }
+        expect(kotlin.math.sin  (angle1 `in` radians)          ) { sin  (angle1        )              }
+        expect(kotlin.math.cos  (angle1 `in` radians)          ) { cos  (angle1        )              }
+        expect(kotlin.math.tan  (angle1 `in` radians)          ) { tan  (angle1        )              }
+        expect(kotlin.math.asin (value1             )          ) { asin (value1        ) `in` radians }
+        expect(kotlin.math.acos (value1             )          ) { acos (value1        ) `in` radians }
+        expect(kotlin.math.atan (value1             )          ) { atan (value1        ) `in` radians }
+        expect(kotlin.math.atan2(value1, value2     )          ) { atan2(value1, value2) `in` radians }
+        expect(kotlin.math.sinh (angle1 `in` radians)          ) { sinh (angle1        )              }
+        expect(kotlin.math.cosh (angle1 `in` radians)          ) { cosh (angle1        )              }
+        expect(kotlin.math.tanh (angle1 `in` radians)          ) { tanh (angle1        )              }
+        expect(kotlin.math.asinh(value1             ) * radians) { asinh(value1        )              }
+        expect(kotlin.math.acosh(3.0                ) * radians) { acosh(3.0           )              }
+        expect(kotlin.math.atanh(value1             ) * radians) { atanh(value1        )              }
     }
 }
