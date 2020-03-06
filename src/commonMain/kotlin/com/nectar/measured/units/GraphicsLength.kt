@@ -5,7 +5,9 @@ package com.nectar.measured.units
  */
 
 open class GraphicsLength(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
-    operator fun div(other: Length) = ratio / other.ratio
-}
+    operator fun div(other: GraphicsLength) = ratio / other.ratio
 
-val pixels = GraphicsLength("px")
+    companion object {
+        val pixels = GraphicsLength("px")
+    }
+}

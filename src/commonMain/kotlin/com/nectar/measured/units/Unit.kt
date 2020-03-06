@@ -7,9 +7,6 @@ import com.nectar.measured.JvmName
  */
 
 abstract class Unit(val suffix: String, val ratio: Double = 1.0) {
-    internal fun convertToBaseUnit  (amount: Double) = amount * ratio
-    internal fun convertFromBaseUnit(amount: Double) = amount / ratio
-
     internal open val spaceBetweenMagnitude = true
 
     override fun toString() = suffix
@@ -31,11 +28,9 @@ abstract class Unit(val suffix: String, val ratio: Double = 1.0) {
 
         return true
     }
-
-    protected open operator fun div(other: Unit) = ratio / other.ratio
 }
 
-class InverseUnit<T: Unit> (unit: T): Unit("1/${unit.suffix}", 1 / unit.ratio)
+class InverseUnit<T: Unit>(val unit: T): Unit("1/${unit.suffix}", 1 / unit.ratio)
 
 operator fun <A: Unit, B: A> A.compareTo(other: B) = ratio.compareTo(other.ratio)
 
@@ -46,6 +41,8 @@ operator fun <A: Unit, B: Unit> A.div(other: B) = UnitRatio(this, other)
 
 operator fun <A: Unit, B: Unit> A.times(other: UnitRatio<B, A>) = this.ratio / other.denominator.ratio * other.numerator
 
+operator fun <A: Unit, B: Unit> A.times(other: InverseUnit<B>) = UnitRatio(this, other.unit)
+
 /**
  * For units after multiplication
  */
@@ -53,18 +50,18 @@ class UnitProduct<A: Unit, B: Unit>(val a: A, val b: B): Unit(if (a==b) "($a)^2"
 
 typealias Square<T> = UnitProduct<T, T>
 
-@JvmName("div1") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: A                ) = a.ratio / other.ratio * b
-@JvmName("div2") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: B                ) = b.ratio / other.ratio * a
-@JvmName("div3") operator fun <A: Unit>                     UnitProduct<A, A>.div(other: A                ) = a.ratio / other.ratio * b
+@JvmName("div1") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: A                ) = a.ratio / other.ratio * b
+@JvmName("div2") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: B                ) = b.ratio / other.ratio * a
+@JvmName("div3") operator fun <A: Unit>                   UnitProduct<A, A>.div(other: A                ) = a.ratio / other.ratio * b
 
 @JvmName("div1") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<C, B>) = a / other.a
 @JvmName("div2") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<C, A>) = b / other.a
 @JvmName("div3") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<B, C>) = a / other.b
 @JvmName("div4") operator fun <A: Unit, B: Unit, C: Unit> UnitProduct<A, B>.div(other: UnitProduct<A, C>) = b / other.b
-@JvmName("div5") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<A, A>) = b / other.b
-@JvmName("div6") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<B, A>) = ratio / other.ratio
-@JvmName("div7") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<A, B>) = ratio / other.ratio
-@JvmName("div8") operator fun <A: Unit, B: Unit>           UnitProduct<A, B>.div(other: UnitProduct<B, B>) = b.ratio / other.b.ratio * (a / other.a)
+@JvmName("div5") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: UnitProduct<A, A>) = b / other.b
+@JvmName("div6") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: UnitProduct<B, A>) = ratio / other.ratio
+@JvmName("div7") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: UnitProduct<A, B>) = ratio / other.ratio
+@JvmName("div8") operator fun <A: Unit, B: Unit>          UnitProduct<A, B>.div(other: UnitProduct<B, B>) = b.ratio / other.b.ratio * (a / other.a)
 
 /**
  * Create a ProductUnit using multiplication operator, eg Metre * Metre for area
@@ -146,8 +143,12 @@ operator fun <A: Unit, B: Unit> Measure<A>.div(other: Measure<B>) = amount / oth
 @JvmName("times4") operator fun <A: Unit, B: Unit>                   Measure<UnitRatio<A, B>>.                times(other: Measure<UnitRatio<A, B>>) = amount * other.amount * (unit * other.unit)
 @JvmName("times5") operator fun <A: Unit, B: Unit, C: Unit>          Measure<UnitRatio<A, UnitProduct<B, C>>>.times(other: Measure<B>              ) = amount * other.amount * (unit * other.unit)
 @JvmName("times6") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> Measure<UnitRatio<A, UnitProduct<B, C>>>.times(other: Measure<D>              ) = amount * other.amount * (unit * other.unit)
+@JvmName("times7") operator fun <A: Unit, B: Unit>                   Measure<A>.                              times(other: Measure<InverseUnit<B>> ) = amount * other.amount * (unit * other.unit)
 
 // TODO: Kapt code generation possible?
+operator fun <A: Unit> Measure<A>.rem(other: Measure<A>) = amount % other.amount * (unit.ratio % other.unit.ratio)
+
+
 @JvmName("div16") operator fun <A: Unit>                   Measure<A>.                div(other: Measure<A>                ) = amount / other.amount * (unit.ratio / other.unit.ratio)
 @JvmName("div1" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<A>                ) = amount / other.amount * (unit / other.unit)
 @JvmName("div2" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<B>                ) = amount / other.amount * (unit / other.unit)
@@ -177,9 +178,9 @@ class Measure<T: Unit>(val amount: Double, val unit: T): Comparable<Measure<T>> 
      * Type must share parent
      * (eg Mile into Kilometer, because they both are made from Distance)
      */
-    infix fun <A: T> `as`(other: A) = if (unit == other) this else Measure(other.convertFromBaseUnit(this.unit.convertToBaseUnit(amount)), other)
+    infix fun <A: T> `as`(other: A) = if (unit == other) this else Measure(this `in` other, other)
 
-    infix fun <A: T> `in`(other: A) = amount * (unit.ratio / other.ratio)
+    infix fun <A: T> `in`(other: A) = if (unit == other) amount else  amount * (unit.ratio / other.ratio)
 
     /**
      * Add another compatible quantity to this one
@@ -217,16 +218,14 @@ class Measure<T: Unit>(val amount: Double, val unit: T): Comparable<Measure<T>> 
 
         val resultUnit = minOf(unit, (other as Measure<T>).unit)
 
-        val a = this  `as` resultUnit
-        val b = other `as` resultUnit
+        val a = this  `in` resultUnit
+        val b = other `in` resultUnit
 
-        if (a.amount != b.amount) return false
-
-        return true
+        return a == b
     }
 
     override fun hashCode(): Int {
-        return unit.convertFromBaseUnit(amount).hashCode()
+        return (amount * unit.ratio).hashCode()
     }
 
     override fun toString(): String {
@@ -240,8 +239,12 @@ class Measure<T: Unit>(val amount: Double, val unit: T): Comparable<Measure<T>> 
 infix fun <T: Unit> Number.into(unit: T) = Measure(this.toDouble(), unit)
 
 operator fun <T: Unit> Number.times(unit: T) = this into unit
+operator fun <T: Unit> Number.div(unit: T) = this into InverseUnit(unit)
+
 operator fun <T: Unit> T.times(value: Number) = value into this
+
 operator fun <T: Unit> T.invoke(value: Number) = value into this
+
 
 fun <T: Unit> abs(value: Measure<T>) = kotlin.math.abs(value.amount) * value.unit
 
@@ -251,40 +254,6 @@ fun <T: Unit> abs(value: Measure<T>) = kotlin.math.abs(value.amount) * value.uni
  */
 operator fun <T: Unit> Number.times(quantity: Measure<T>) = quantity * this
 
-//open class Distance2(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
-//    companion object {
-//        val miles       = Distance2("mi", 1609.34)
-//        val millimeters = Distance2("mm",    0.01)
-//        val centimeters = Distance2("cm",    0.10)
-//        val meters      = Distance2("m"          )
-//        val kilometers  = Distance2("km", 1000.00)
-//    }
-//
-//    operator fun div(other: Distance2) = ratio / other.ratio
-//}
-
-//open class Time2(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
-//    companion object {
-//        val milliseconds = Time2("ms"                       )
-//        val seconds      = Time2("s",   1000.0              )
-//        val minutes      = Time2("min", 60   * seconds.ratio)
-//        val hours        = Time2("hr",  60   * minutes.ratio)
-//    }
-//
-//    operator fun div(other: Time2) = ratio / other.ratio
-//}
-
-//open class Mass(suffix: String, ratio: Double = 1.0): Unit2(suffix, ratio) {
-//    companion object {
-//        val grams     = Mass("g"                  )
-//        val kilograms = Mass("kg", 1000.0         )
-//        val tonnes    = Mass("t",  1000.0 * 1000.0)
-//    }
-//
-//    operator fun div(other: Mass) = ratio / other.ratio
-//}
-
-
 operator fun Length.times(other: Time) = UnitProduct(this, other)
 operator fun Time.times(other: Length) = UnitProduct(other, this)
 
@@ -292,39 +261,29 @@ typealias Velocity     = UnitRatio<Length, Time>
 typealias Acceleration = UnitRatio<Length, Square<Time>>
 
 
-fun main(args: Array<String>) {
-    val acceleration = 5 * (meters / (seconds * seconds))
-    val velocity     = 5 * (meters / seconds)
-    val timeOffset   = 5 * seconds
-    val distance     = 5 * meters
-
-    val a = distance / timeOffset
-
-//    val distance = 10 * meters + velocity * timeOffset
-
-//    println(velocity * timeOffset)
-//    println(acceleration * timeOffset)
-//    println(velocity * velocity / distance)
-//    println(meters * meters / (seconds * seconds) / meters)
-//    println(1 * (meters / seconds) * (1 * (meters / seconds)) / (1 * meters))
-    println((meters / seconds) / (meters / (seconds * seconds)))
-    println(velocity / acceleration)
-//    println(meters / (seconds * seconds) * seconds)
-//    println(meters * seconds / (seconds * seconds))
-
-//    println(meters / (seconds * seconds) * seconds == meters * seconds / (seconds * seconds))
-}
-
-class Bar<T: Unit>(t: T) {
-    init {
-        val timeOffset   = 5 * seconds
-        val velocity     = 5 * (t / seconds)
-        val acceleration = 5 * (t / (seconds * seconds))
-
-        val distance: Measure<T> = 10 * t + velocity * timeOffset
-
-//        println(distance / velocity)
-//        println(velocity * velocity / distance)
-//        println(-velocity / acceleration)
-    }
-}
+//fun main(args: Array<String>) {
+//    val acceleration = 5 * (meters / (seconds * seconds))
+//    val velocity     = 5 * (meters / seconds)
+//    val timeOffset   = 5 * seconds
+//    val distance     = 5 * meters
+//
+//    val a = distance / timeOffset
+//
+//    val b = 10 * seconds % (2 * seconds)
+//
+//    println(b)
+//
+////    val distance = 10 * meters + velocity * timeOffset
+//
+////    println(velocity * timeOffset)
+////    println(acceleration * timeOffset)
+////    println(velocity * velocity / distance)
+////    println(meters * meters / (seconds * seconds) / meters)
+////    println(1 * (meters / seconds) * (1 * (meters / seconds)) / (1 * meters))
+////    println((meters / seconds) / (meters / (seconds * seconds)))
+////    println(velocity / acceleration)
+////    println(meters / (seconds * seconds) * seconds)
+////    println(meters * seconds / (seconds * seconds))
+//
+////    println(meters / (seconds * seconds) * seconds == meters * seconds / (seconds * seconds))
+//}
