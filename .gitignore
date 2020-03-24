@@ -3,7 +3,10 @@
 ### Example user template
 
 # IntelliJ project files
-.idea
+.idea/
+.gradle/
+out/
+build/
 *.iml
-out
-gen
+**/web/main.bundle.js*
+package-lock.json
