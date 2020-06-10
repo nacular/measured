@@ -1,6 +1,7 @@
 package io.nacular.measured.units
 
 import io.nacular.measured.JvmName
+import kotlin.math.roundToInt
 
 /**
  * Created by Nicholas Eddy on 4/4/18.
@@ -180,6 +181,8 @@ class Measure<T: Unit>(val amount: Double, val unit: T): Comparable<Measure<T>> 
      * Divide this by a scalar, used for things like "halve the speed"
      */
     operator fun div(other: Number) = amount / other.toDouble() * unit
+
+    fun roundToInt() = amount.roundToInt() * unit
 
     /**
      * Compare this value with another quantity - which must have the same type
