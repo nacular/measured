@@ -16,10 +16,11 @@ plugins {
 
     id ("org.jetbrains.kotlin.multiplatform") version kotlinVersion
     id ("org.jetbrains.dokka"               ) version "0.10.0"
+    id("maven-publish")
 }
 
 version  = "0.1.0"
-group    = "com.nectar.measured"
+group    = "io.nacular.measured"
 
 repositories {
     maven       { url = uri("http://dl.bintray.com/kotlin/kotlin-eap") }
