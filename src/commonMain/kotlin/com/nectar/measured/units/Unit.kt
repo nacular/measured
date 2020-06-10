@@ -76,41 +76,6 @@ class UnitRatio<A: Unit, B: Unit>(val numerator: A, val denominator: B): Unit("$
     val reciprocal by lazy { UnitRatio(denominator, numerator) }
 }
 
-/*
- *     A | A || A | A
- *     A | A || A | B
- *     A | A || B | A
- *     A | A || B | B       A | A || C | C      A | A || D | D
- *
- *     A | A || C | D
- *     A | A || D | C
- *
- *     A | B || A | A
- *     A | B || A | B
- *     A | B || B | A
- *     A | B || B | B       A | B || C | C      A | B || D | D
- *
- *     A | B || C | D
- *     A | B || D | C
- */
-
-/*
- *     -- A | A || A | A
- *     -- A | A || A | B
- *     -- A | A || B | A
- *     -- A | A || B | B       A | A || C | C      A | A || D | D
- *
- *     -- A | A || C | D
- *     -- A | A || D | C
- *
- *     -- A | B || A | A
- *     -- A | B || B | B       A | B || C | C      A | B || D | D
- *
- *     A | B || A | B
- *     A | B || B | A
- *     A | B || C | D       A | B || D | C
- */
-
 @JvmName("times1") operator fun <A: Unit, B: Unit>                   UnitRatio<A, B>.times(other: UnitRatio<A, B>) = numerator * other.numerator / (denominator * other.denominator)
 @JvmName("times2") operator fun <A: Unit, B: Unit>                   UnitRatio<A, B>.times(other: UnitRatio<B, A>) = numerator * other.numerator / (denominator * other.denominator)
 @JvmName("times3") operator fun <A: Unit, B: Unit, C: Unit, D: Unit> UnitRatio<A, B>.times(other: UnitRatio<C, D>) = numerator * other.numerator / (denominator * other.denominator)
@@ -118,7 +83,6 @@ class UnitRatio<A: Unit, B: Unit>(val numerator: A, val denominator: B): Unit("$
 @JvmName("div1") operator fun <A: Unit, B: Unit>                     UnitRatio<A, B>.div(other: UnitRatio<A, B>) = this * other.reciprocal
 @JvmName("div2") operator fun <A: Unit, B: Unit>                     UnitRatio<A, B>.div(other: UnitRatio<B, A>) = this * other.reciprocal
 @JvmName("div3") operator fun <A: Unit, B: Unit, C: Unit, D: Unit>   UnitRatio<A, B>.div(other: UnitRatio<C, D>) = this * other.reciprocal
-
 
 operator fun <A: Unit, B: Unit>                                    UnitRatio<A, B>.                times(other: B                 ) = other.ratio / denominator.ratio * numerator
 
@@ -147,7 +111,6 @@ operator fun <A: Unit, B: Unit> Measure<A>.div(other: Measure<B>) = amount / oth
 
 // TODO: Kapt code generation possible?
 operator fun <A: Unit> Measure<A>.rem(other: Measure<A>) = amount % other.amount * (unit.ratio % other.unit.ratio)
-
 
 @JvmName("div16") operator fun <A: Unit>                   Measure<A>.                div(other: Measure<A>                ) = amount / other.amount * (unit.ratio / other.unit.ratio)
 @JvmName("div1" ) operator fun <A: Unit, B: Unit>          Measure<UnitProduct<A, B>>.div(other: Measure<A>                ) = amount / other.amount * (unit / other.unit)
@@ -259,31 +222,3 @@ operator fun Time.times(other: Length) = UnitProduct(other, this)
 
 typealias Velocity     = UnitRatio<Length, Time>
 typealias Acceleration = UnitRatio<Length, Square<Time>>
-
-
-//fun main(args: Array<String>) {
-//    val acceleration = 5 * (meters / (seconds * seconds))
-//    val velocity     = 5 * (meters / seconds)
-//    val timeOffset   = 5 * seconds
-//    val distance     = 5 * meters
-//
-//    val a = distance / timeOffset
-//
-//    val b = 10 * seconds % (2 * seconds)
-//
-//    println(b)
-//
-////    val distance = 10 * meters + velocity * timeOffset
-//
-////    println(velocity * timeOffset)
-////    println(acceleration * timeOffset)
-////    println(velocity * velocity / distance)
-////    println(meters * meters / (seconds * seconds) / meters)
-////    println(1 * (meters / seconds) * (1 * (meters / seconds)) / (1 * meters))
-////    println((meters / seconds) / (meters / (seconds * seconds)))
-////    println(velocity / acceleration)
-////    println(meters / (seconds * seconds) * seconds)
-////    println(meters * seconds / (seconds * seconds))
-//
-////    println(meters / (seconds * seconds) * seconds == meters * seconds / (seconds * seconds))
-//}
