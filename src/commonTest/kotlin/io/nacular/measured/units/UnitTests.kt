@@ -35,7 +35,7 @@ class UnitTests {
     @Test @JsName("divWorks")
     fun `div works`() {
         val a = UnitA("a", 10.0)
-        val b = UnitA("b", 1.0)
+        val b = UnitA("b",  1.0)
 
         expect(10.0, "$a / $b") { a / b }
     }
@@ -50,7 +50,7 @@ class UnitTests {
     @Test @JsName("comparisonsWork")
     fun `comparisons work`() {
         val a = UnitA("a", 10.0)
-        val b = UnitA("b", 1.0)
+        val b = UnitA("b",  1.0)
         val c = UnitA("a", 10.0)
 
         expect(true,  "$a > $b" ) { a  > b }
@@ -64,20 +64,14 @@ class UnitTests {
 class UnitRatioTests {
     @Test @JsName("defaultMultiplierIs1")
     fun `default ratio is 1`() {
-        val a = UnitRatio(
-            UnitA("a"),
-            UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a"), UnitB("b"))
 
         expect(1.0, "$a.ratio") { a.ratio }
     }
 
     @Test @JsName("doubleReciprocal")
     fun `1 ÷ (1 ÷ a) == a`() {
-        val a = UnitRatio(
-            UnitA("a"),
-            UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a"), UnitB("b"))
 
         expect(a, "$a.reciprocal.reciprocal") { a.reciprocal.reciprocal }
     }
@@ -92,12 +86,7 @@ class UnitRatioTests {
 
     @Test @JsName("timesBWorks")
     fun `(A÷B) * B = A`() {
-        val a = UnitRatio(
-            UnitA(
-                "a",
-                10.0
-            ), UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
         val b = UnitB("b", 1.0)
 
         expect(1 * UnitA("a", 10.0), "$a * $b") { a * b }
@@ -105,24 +94,14 @@ class UnitRatioTests {
 
     @Test @JsName("timesInverseWorks")
     fun `(A÷B) * (B÷A) = 1`() {
-        val a = UnitRatio(
-            UnitA(
-                "a",
-                10.0
-            ), UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
 
         expect(1.0, "$a * 1/$a") { a * a.reciprocal }
     }
 
     @Test @JsName("divSelfWorks")
     fun `(A÷B) ÷ (A÷B) = 1`() {
-        val a = UnitRatio(
-            UnitA(
-                "a",
-                10.0
-            ), UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a", 10.0), UnitB("b"))
 
         expect(1.0, "$a / $a") { a / a }
     }
@@ -130,7 +109,7 @@ class UnitRatioTests {
     @Test @JsName("toStringWorks")
     fun `toString works`() {
         val a     = UnitA("a", 10.0)
-        val b     = UnitB("b")
+        val b     = UnitB("b"      )
         val ratio = UnitRatio(a, b)
 
         ratio.let            { expect("$a/$b", "$it.toString()") { it.toString() } }
@@ -139,24 +118,9 @@ class UnitRatioTests {
 
     @Test @JsName("comparisonsWork")
     fun `comparisons work`() {
-        val a = UnitRatio(
-            UnitA(
-                "a1",
-                10.0
-            ), UnitB("b")
-        )
-        val b = UnitRatio(
-            UnitA(
-                "a2",
-                1.0
-            ), UnitB("b")
-        )
-        val c = UnitRatio(
-            UnitA(
-                "a1",
-                10.0
-            ), UnitB("b")
-        )
+        val a = UnitRatio(UnitA("a1", 10.0), UnitB("b"))
+        val b = UnitRatio(UnitA("a2",  1.0), UnitB("b"))
+        val c = UnitRatio(UnitA("a1", 10.0), UnitB("b"))
 
         expect(true,  "$a > $b" ) { a  > b }
         expect(false, "$a < $b" ) { a  < b }
@@ -170,13 +134,13 @@ class MeasureTests {
     @Test @JsName("zeroWorks")
     fun `zero works`() {
         val unitA = UnitA("a", 10.0)
-        val unitB = UnitA("b", 1.0)
+        val unitB = UnitA("b",  1.0)
 
         val zero     = 0 * unitA
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
-        val measureC = Measure(0.0, unitB)
-        val measureD = Measure(0.0, unitA)
+        val measureC = Measure( 0.0, unitB)
+        val measureD = Measure( 0.0, unitA)
 
         expect(true, "$measureA > $zero"     ) { measureA  > zero     }
         expect(true, "$measureB > $zero"     ) { measureB  > zero     }
@@ -187,19 +151,19 @@ class MeasureTests {
     @Test @JsName("comparisonsWork")
     fun `comparisons work`() {
         val unitA = UnitA("a", 10.0)
-        val unitB = UnitA("b", 1.0)
-        val unitC = UnitA("c")
+        val unitB = UnitA("b",  1.0)
+        val unitC = UnitA("c"      )
 
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
         val measureC = Measure(10.0, unitC)
 
-        expect(true,  "$measureA == $measureA" ) { measureA == measureA }
-        expect(true,  "$measureB == $measureB" ) { measureB == measureB }
-        expect(true,  "$measureC == $measureC" ) { measureC == measureC }
+        expect(true,  "$measureA == $measureA") { measureA == measureA }
+        expect(true,  "$measureB == $measureB") { measureB == measureB }
+        expect(true,  "$measureC == $measureC") { measureC == measureC }
 
-        expect(true,  "$measureA > $measureB" ) { measureA  > measureB }
-        expect(false, "$measureA < $measureB" ) { measureA  < measureB }
+        expect(true,  "$measureA  > $measureB") { measureA  > measureB }
+        expect(false, "$measureA  < $measureB") { measureA  < measureB }
         expect(false, "$measureA == $measureB") { measureA == measureB }
 //        expect(false, "$measureB == $measureC") { measureB == measureC }
     }
@@ -207,13 +171,13 @@ class MeasureTests {
     @Test @JsName("plusMinusOperatorsWork")
     fun `+ -`() {
         val unitA = UnitA("a", 10.0)
-        val unitB = UnitA("b", 1.0)
+        val unitB = UnitA("b",  1.0)
 
         val measureA = Measure(10.0, unitA)
         val measureB = Measure(10.0, unitB)
 
         expect(Measure(110.0, unitB)) { measureA + measureB }
-        expect(Measure(90.0, unitB)) { measureA - measureB }
+        expect(Measure( 90.0, unitB)) { measureA - measureB }
     }
 
     @Test @JsName("unaryMinusOperatorsWork")
@@ -228,9 +192,9 @@ class MeasureTests {
     @Test @JsName("timesDivideOperatorsWork")
     fun `* ÷`() {
         val op: (Operation<UnitA>) -> kotlin.Unit = {
-            val unit   = UnitA("a")
-            val start  = 10.0
-            val value  = 2.3
+            val unit    = UnitA("a")
+            val start   = 10.0
+            val value   = 2.3
             val measure = Measure(start, unit)
 
             expect(Measure(it((measure `in` unit), value), unit)) { it(measure, value) }

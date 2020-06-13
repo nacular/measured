@@ -5,14 +5,16 @@ package io.nacular.measured.units
 import kotlin.math.PI
 
 /**
- * Created by Nicholas Eddy on 10/19/17.
+ * Unit to measure geometric angles.
  */
-
 open class Angle(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
     operator fun div(other: Angle) = ratio / other.ratio
 
     companion object {
+        /** 2π * radians is the circumference of a circle */
         val radians = Angle("rad")
+
+        /** 360 * degrees is the circumference of a circle */
         val degrees = object: Angle("°", PI / 180) { override val spaceBetweenMagnitude = false }
 
         inline fun sin  (angle : Measure<Angle>        ) = kotlin.math.sin  (angle  `in` radians)
@@ -28,18 +30,18 @@ open class Angle(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
         inline fun asinh(value : Double                ) = kotlin.math.asinh(value              ) * radians
         inline fun acosh(value : Double                ) = kotlin.math.acosh(value              ) * radians
         inline fun atanh(value : Double                ) = kotlin.math.atanh(value              ) * radians
-
-        /**
-         * @returns a measure that is within [0°, 360°)
-         */
-        fun Measure<Angle>.normalize(): Measure<Angle> {
-            var result = (this `in` degrees) % 360
-
-            if (result < 0) {
-                result += 360
-            }
-
-            return result * degrees
-        }
     }
+}
+
+/**
+ * @returns a measure that is within [0°, 360°)
+ */
+fun Measure<Angle>.normalize(): Measure<Angle> {
+    var result = (this `in` Angle.degrees) % 360
+
+    if (result < 0) {
+        result += 360
+    }
+
+    return result * Angle.degrees
 }

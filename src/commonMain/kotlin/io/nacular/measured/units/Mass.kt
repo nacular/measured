@@ -1,9 +1,8 @@
 package io.nacular.measured.units
 
 /**
- * Created by Nicholas Eddy on 10/18/18.
+ * Units to measure how much matter is in an object.
  */
-
 open class Mass(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
     operator fun div(other: Mass) = ratio / other.ratio
 
@@ -12,3 +11,6 @@ open class Mass(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
         val grams     = Mass("g", 1.0 / 1000)
     }
 }
+
+operator fun Length.times(mass: Mass) = mass * this
+operator fun Measure<Length>.times(mass: Mass) = amount * (unit * mass)

@@ -1,6 +1,10 @@
 package io.nacular.measured.units
 
 import io.nacular.measured.JsName
+import io.nacular.measured.units.Time.Companion.hours
+import io.nacular.measured.units.Time.Companion.milliseconds
+import io.nacular.measured.units.Time.Companion.minutes
+import io.nacular.measured.units.Time.Companion.seconds
 import kotlin.test.Test
 import kotlin.test.expect
 
@@ -19,14 +23,14 @@ class TimeTests {
         testUnit(
             mapOf(
                 milliseconds to mapOf(
-                    1.0 to milliseconds,
-                    1.0 / 1000 to seconds,
-                    1.0 / 60_000 to minutes,
+                    1.0            to milliseconds,
+                    1.0 / 1000     to seconds,
+                    1.0 / 60_000   to minutes,
                     1.0 / 3600_000 to hours
                 ),
-                seconds to mapOf(1000.0 to milliseconds, 1.0 to seconds, 1.0 / 60 to minutes, 1.0 / 3600 to hours),
-                minutes to mapOf(60_000.0 to milliseconds, 60.0 to seconds, 1.0 to minutes, 1.0 / 60 to hours),
-                hours to mapOf(3600_000.0 to milliseconds, 3600.0 to seconds, 60.0 to minutes, 1.0 to hours)
+                seconds to mapOf(1000.0     to milliseconds, 1.0    to seconds, 1.0 / 60 to minutes, 1.0 / 3600 to hours),
+                minutes to mapOf(60_000.0   to milliseconds, 60.0   to seconds, 1.0      to minutes, 1.0 / 60   to hours),
+                hours   to mapOf(3600_000.0 to milliseconds, 3600.0 to seconds, 60.0     to minutes, 1.0        to hours)
             )
         )
     }
