@@ -2,7 +2,7 @@
 
 package io.nacular.measured.units
 
-import io.nacular.measured.JsName
+import kotlin.js.JsName
 import kotlin.test.Test
 import kotlin.test.expect
 

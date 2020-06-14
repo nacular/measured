@@ -1,6 +1,6 @@
 package io.nacular.measured.units
 
-import io.nacular.measured.JvmName
+import kotlin.jvm.JvmName
 import kotlin.math.roundToInt
 
 /**

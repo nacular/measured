@@ -1,10 +1,10 @@
 package io.nacular.measured.units
 
-import io.nacular.measured.JsName
 import io.nacular.measured.units.Time.Companion.hours
 import io.nacular.measured.units.Time.Companion.milliseconds
 import io.nacular.measured.units.Time.Companion.minutes
 import io.nacular.measured.units.Time.Companion.seconds
+import kotlin.js.JsName
 import kotlin.test.Test
 import kotlin.test.expect
 

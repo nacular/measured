@@ -1,6 +1,5 @@
 package io.nacular.measured.units
 
-import io.nacular.measured.JsName
 import io.nacular.measured.units.Angle.Companion.acos
 import io.nacular.measured.units.Angle.Companion.acosh
 import io.nacular.measured.units.Angle.Companion.asin
@@ -16,6 +15,7 @@ import io.nacular.measured.units.Angle.Companion.sin
 import io.nacular.measured.units.Angle.Companion.sinh
 import io.nacular.measured.units.Angle.Companion.tan
 import io.nacular.measured.units.Angle.Companion.tanh
+import kotlin.js.JsName
 import kotlin.math.PI
 import kotlin.test.Test
 import kotlin.test.expect
