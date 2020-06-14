@@ -84,6 +84,14 @@ so you can simply include the dependency as follows if you build with Gradle 5.3
 <div style="margin-top:3em;font-weight:Bold">build.gradle.kts</div>
 
 ```kotlin
+// ...
+
+repositories {
+    mavenCentral()
+}
+
+// ...
+
 kotlin {
     // ...
     dependencies {

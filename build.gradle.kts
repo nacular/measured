@@ -97,8 +97,18 @@ kotlin {
     }
 }
 
+val dokkaJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    classifier = "javadoc"
+    from(tasks.dokka)
+}
+
 publishing {
     publications.withType<MavenPublication>().apply {
+        val jvm by getting {
+            artifact(dokkaJar)
+        }
         all {
             pom {
                 name.set       ("Measured"                           )
@@ -147,6 +157,17 @@ signing {
         project.hasProperty("release") && gradle.taskGraph.hasTask("publish")
     })
     useGpgCmd()
-    sign(publishing.publications["js" ])
-    sign(publishing.publications["jvm"])
+    sign(publishing.publications)
+}
+
+tasks {
+    val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+        outputDirectory = "$buildDir/javadoc"
+        outputFormat    = "html"
+
+        multiplatform {
+            val js  by creating {}
+            val jvm by creating {}
+        }
+    }
 }
