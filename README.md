@@ -37,14 +37,14 @@ Use division and multiplication to create compound measures. Convert between the
 ```kotlin
 val velocity     = 5 * meters / seconds
 val acceleration = 9 * meters / (seconds * seconds)
-val time         = 1 * minute
+val time         = 1 * minutes
 
 //  d = vt + ½at²
 val distance     = velocity * time + 1.0/2 * acceleration * time * time
 
-println(distance                       ) // 16500 m
-println(distance * 1000 `as` kilometers) // 16.5 km
-println(distance * 1000 `as` miles     ) // 10.25262467191601 mi
+println(distance                ) // 16500 m
+println(distance `as` kilometers) // 16.5 km
+println(distance `as` miles     ) // 10.25262467191601 mi
 
 println(5 * miles / hours `as` meters / seconds) // 2.2352 m/s
 ```
