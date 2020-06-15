@@ -1,9 +1,9 @@
 package io.nacular.measured.units
 
 /**
- * Unit for measuring graphics display distances (i.e. distances on the surface of a display).
+ * Units for measuring graphics display distances (i.e. distances on the surface of a display).
  */
-open class GraphicsLength(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
+open class GraphicsLength(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: GraphicsLength) = ratio / other.ratio
 
     companion object {

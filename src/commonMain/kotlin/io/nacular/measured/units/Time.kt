@@ -3,7 +3,7 @@ package io.nacular.measured.units
 /**
  * Units to measure time durations.
  */
-open class Time(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
+open class Time(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: Time) = ratio / other.ratio
 
     companion object {

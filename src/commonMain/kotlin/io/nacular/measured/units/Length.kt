@@ -3,7 +3,7 @@ package io.nacular.measured.units
 /**
  * Units for length or distance.
  */
-open class Length(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
+open class Length(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: Length) = ratio / other.ratio
 
     companion object {
@@ -19,6 +19,6 @@ open class Length(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
  * Sort Length before Time which is conventional.
  */
 operator fun Time.times(other: Length) = other * this
-operator fun Measure<Time>.times(other: Length) = amount * other * unit
+operator fun Measure<Time>.times(other: Length) = amount * other * units
 
 typealias Distance = Length

@@ -3,7 +3,7 @@ package io.nacular.measured.units
 /**
  * Units to measure how much matter is in an object.
  */
-open class Mass(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
+open class Mass(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: Mass) = ratio / other.ratio
 
     companion object {
@@ -13,4 +13,4 @@ open class Mass(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
 }
 
 operator fun Length.times(mass: Mass) = mass * this
-operator fun Measure<Length>.times(mass: Mass) = amount * (unit * mass)
+operator fun Measure<Length>.times(mass: Mass) = amount * (units * mass)

@@ -5,9 +5,9 @@ package io.nacular.measured.units
 import kotlin.math.PI
 
 /**
- * Unit to measure geometric angles.
+ * Units to measure geometric angles.
  */
-open class Angle(suffix: String, ratio: Double = 1.0): Unit(suffix, ratio) {
+open class Angle(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: Angle) = ratio / other.ratio
 
     companion object {
