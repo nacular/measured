@@ -248,7 +248,6 @@ operator fun <A: Units> Measure<A>.rem(other: Measure<A>): Double = amount % oth
 @JvmName("div14") operator fun <A: Units, B: Units, C: Units, D: Units> Measure<UnitsRatio<UnitsProduct<A, B>, UnitsProduct<C, D>>>.div(other: A                       ): Measure<UnitsRatio<B, UnitsProduct<C, D>>>                  = amount * (units / other)
 @JvmName("div15") operator fun <A: Units, B: Units>                     Measure<A>.                                                 div(other: UnitsRatio<A, B>        ): Measure<B>                                                  = amount * (units / other)
 
-
 // Helpers for converting numbers into measures
 
 private infix fun <T: Units> Number.into(unit: T): Measure<T> = Measure(this.toDouble(), unit)

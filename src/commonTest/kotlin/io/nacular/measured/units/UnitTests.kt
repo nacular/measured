@@ -3,6 +3,7 @@
 package io.nacular.measured.units
 
 import kotlin.js.JsName
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 
@@ -76,13 +77,13 @@ class UnitRatioTests {
         expect(a, "$a.reciprocal.reciprocal") { a.reciprocal.reciprocal }
     }
 
-//    @Test @JsName("divAWorks")
-//    fun `(A÷B) ÷ A = 1÷B`() {
-//        val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
-//        val b = UnitsB("a", 10.0)
-//
-//        expect(1 * Units("b"), "$a / $b") { a / b }
-//    }
+    @Test @Ignore @JsName("divAWorks")
+    fun `(A÷B) ÷ A = 1÷B`() {
+        val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
+        val b = UnitsB("a", 10.0)
+
+        expect<Units>(InverseUnits(UnitsB("b")), "$a / $b") { a / b }
+    }
 
     @Test @JsName("timesBWorks")
     fun `(A÷B) * B = A`() {
@@ -209,14 +210,12 @@ interface Operation<T: Units> {
     operator fun invoke(first: Measure<T>, second: Double): Measure<T>
 }
 
-private val times = object:
-    Operation<UnitsA> {
+private val times = object: Operation<UnitsA> {
     override fun invoke(first: Double,         second: Double) = first * second
     override fun invoke(first: Measure<UnitsA>, second: Double) = first * second
 }
 
-private val divide = object:
-    Operation<UnitsA> {
+private val divide = object: Operation<UnitsA> {
     override fun invoke(first: Double,         second: Double) = first / second
     override fun invoke(first: Measure<UnitsA>, second: Double) = first / second
 }
