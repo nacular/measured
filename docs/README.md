@@ -59,7 +59,7 @@ Measure's support of math operators helps you avoid working with raw values dire
 ```kotlin
 val marathon              = 26 * miles
 val velocity              = 3 * kilometers / hours
-val timeToRunHalfMarathon = velocity * marathon / 2
+val timeToRunHalfMarathon = (marathon / 2) / velocity // 6.973824 hr
 ``` 
 
 ```kotlin
