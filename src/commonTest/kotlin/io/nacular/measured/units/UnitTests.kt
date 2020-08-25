@@ -192,7 +192,7 @@ class MeasureTests {
 
     @Test @JsName("timesDivideOperatorsWork")
     fun `* ÷`() {
-        val op: (Operation<UnitsA>) -> kotlin.Unit = {
+        val op: (Operation<UnitsA>) -> Unit = {
             val unit    = UnitsA("a")
             val start   = 10.0
             val value   = 2.3
