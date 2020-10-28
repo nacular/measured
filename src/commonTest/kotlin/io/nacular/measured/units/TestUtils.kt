@@ -14,7 +14,7 @@ fun testUnit(units: Map<Units, Map<Double, Units>>) {
 
             // This would be better as first == second.  But we can't specialize Measure.equals to do the right thing due to
             // type erasure.
-            expect(true, "$first == $second") { first `as` target == second }
+            expect(second, "$first") { first `as` target }
         }
     }
 }

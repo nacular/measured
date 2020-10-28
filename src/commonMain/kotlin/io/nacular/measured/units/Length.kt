@@ -7,11 +7,13 @@ open class Length(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
     operator fun div(other: Length) = ratio / other.ratio
 
     companion object {
-        val miles       = Length("mi", 1609.344)
-        val millimeters = Length("mm",    0.010)
-        val centimeters = Length("cm",    0.100)
-        val meters      = Length("m"           )
-        val kilometers  = Length("km", 1000.000)
+        val miles       = Length("mi", 1609.3440)
+        val millimeters = Length("mm",    0.0010)
+        val centimeters = Length("cm",    0.0100)
+        val meters      = Length("m"            )
+        val inches      = Length("in",    0.0254)
+        val feet        = Length("ft", 12 * inches `in` meters)
+        val kilometers  = Length("km", 1000.0000)
     }
 }
 
