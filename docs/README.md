@@ -1,10 +1,9 @@
 <div style="font-size:70px"><img src="measured.svg" alt="measured" style="height:70px">easured</div>
 <div><h1>Type-safe, intuitive units of measure</h1></div>
 
-[![Kotlin 1.3.72](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg?style=flat&logo=kotlin)](http://kotlinlang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/nacular/measured/blob/master/LICENSE)
+[![Kotlin 1.3.72](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
----
 
 Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness,
 and provides intuitive, mathematical operations to work with any units.
