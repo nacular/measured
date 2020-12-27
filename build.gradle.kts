@@ -35,8 +35,10 @@ kotlin {
         }
     }
     js {
-        browser.testTask {
-            enabled = false
+        browser {
+            testTask {
+                enabled = false
+            }
         }
     }.compilations.all {
         kotlinOptions {
