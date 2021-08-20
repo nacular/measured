@@ -21,7 +21,7 @@ plugins {
 }
 
 repositories {
-    maven       { url = uri("http://dl.bintray.com/kotlin/kotlin-eap") }
+    maven       { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     mavenCentral()
     jcenter     ()
 }
@@ -50,9 +50,7 @@ kotlin {
         }
     }
 
-    val mockkVersion   : String by project
-    val junitVersion   : String by project
-    val mockkJsVersion : String by project
+    val junitVersion: String by project
 
     sourceSets {
         val commonMain by getting {
@@ -65,13 +63,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation("io.mockk:mockk-common:$mockkVersion")
-            }
-        }
-
-        jvm().compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("stdlib-jdk8"))
             }
         }
 
@@ -79,21 +70,12 @@ kotlin {
             dependencies {
                 implementation("junit:junit:$junitVersion")
                 implementation(kotlin("test-junit"))
-
-                implementation("io.mockk:mockk:$mockkVersion")
-            }
-        }
-
-        js().compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("stdlib-js"))
             }
         }
 
         js().compilations["test"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("test-js"))
-                implementation("io.mockk:mockk-js:$mockkJsVersion")
             }
         }
     }
