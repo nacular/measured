@@ -2,7 +2,6 @@ buildscript {
     val kotlinVersion: String by System.getProperties()
 
     repositories {
-        maven       { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
         mavenCentral()
     }
 
@@ -15,15 +14,13 @@ plugins {
     val kotlinVersion: String by System.getProperties()
 
     id ("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-    id ("org.jetbrains.dokka"               ) version "0.10.0"
-    id("maven-publish")
+    id ("org.jetbrains.dokka"               ) version "1.6.0"
+    id ("maven-publish"                     )
     signing
 }
 
 repositories {
-    maven       { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     mavenCentral()
-    jcenter     ()
 }
 
 kotlin {
@@ -85,7 +82,7 @@ val dokkaJar by tasks.creating(Jar::class) {
     group = JavaBasePlugin.DOCUMENTATION_GROUP
     description = "Assembles Kotlin docs with Dokka"
     classifier = "javadoc"
-    from(tasks.dokka)
+    from(tasks.dokkaHtml)
 }
 
 publishing {
@@ -144,14 +141,30 @@ signing {
     sign(publishing.publications)
 }
 
-tasks {
-    val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
-        outputDirectory = "$buildDir/javadoc"
-        outputFormat    = "html"
+tasks.dokkaHtml {
+    outputDirectory.set(buildDir.resolve("javadoc"))
 
-        multiplatform {
-            val js  by creating {}
-            val jvm by creating {}
+    dokkaSourceSets {
+        configureEach {
+            includeNonPublic.set(false)
+
+            // Do not output deprecated members. Applies globally, can be overridden by packageOptions
+            skipDeprecated.set(true)
+
+            // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
+            reportUndocumented.set(true)
+
+            // Do not create index pages for empty packages
+            skipEmptyPackages.set(true)
         }
     }
+}
+
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download    = false
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
+}
+
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
 }

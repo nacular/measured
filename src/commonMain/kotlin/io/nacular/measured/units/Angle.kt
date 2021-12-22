@@ -2,6 +2,7 @@
 
 package io.nacular.measured.units
 
+import io.nacular.measured.units.Angle.Companion.degrees
 import kotlin.math.PI
 
 /**
@@ -34,14 +35,14 @@ open class Angle(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
 }
 
 /**
- * @returns a measure that is within [0°, 360°)
+ * Returns a measure that is within [0°, 360°)
  */
 fun Measure<Angle>.normalize(): Measure<Angle> {
-    var result = (this `in` Angle.degrees) % 360
+    var result = (this `in` degrees) % 360
 
     if (result < 0) {
         result += 360
     }
 
-    return result * Angle.degrees
+    return result * degrees
 }

@@ -98,7 +98,7 @@ class Measure<T: Units>(val amount: Double, val units: T): Comparable<Measure<T>
      * Type must share parent
      * (eg Mile into Kilometer, because they both are made from Distance)
      */
-    infix fun <A: T> `as`(other: A): Measure<out T> = if (units == other) this else Measure(this `in` other, other)
+    infix fun <A: T> `as`(other: A): Measure<T> = if (units == other) this else Measure(this `in` other, other)
 
     infix fun <A: T> `in`(other: A): Double = if (units == other) amount else  amount * (units.ratio / other.ratio)
 
