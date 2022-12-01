@@ -4,7 +4,7 @@ package io.nacular.measured.units
  * Units to measure computer storage, bandwidth, etc..
  */
 class BinarySize(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
-    operator fun div(other: GraphicsLength) = ratio / other.ratio
+    operator fun div(other: BinarySize) = ratio / other.ratio
 
     companion object {
         val bytes     = BinarySize("B"                                  )

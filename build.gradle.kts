@@ -14,7 +14,7 @@ plugins {
     val kotlinVersion: String by System.getProperties()
 
     id ("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-    id ("org.jetbrains.dokka"               ) version "1.6.0"
+    id ("org.jetbrains.dokka"               ) version "1.7.20"
     id ("maven-publish"                     )
     signing
 }
@@ -65,7 +65,7 @@ kotlin {
 
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
-                implementation("junit:junit:$junitVersion")
+                implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
                 implementation(kotlin("test-junit"))
             }
         }
@@ -81,8 +81,27 @@ kotlin {
 val dokkaJar by tasks.creating(Jar::class) {
     group = JavaBasePlugin.DOCUMENTATION_GROUP
     description = "Assembles Kotlin docs with Dokka"
-    classifier = "javadoc"
+    archiveClassifier.set("javadoc")
     from(tasks.dokkaHtml)
+}
+
+tasks.dokkaHtml {
+    outputDirectory.set(buildDir.resolve("javadoc"))
+
+    dokkaSourceSets {
+        configureEach {
+            includeNonPublic.set(false)
+
+            // Do not output deprecated members. Applies globally, can be overridden by packageOptions
+            skipDeprecated.set(true)
+
+            // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
+            reportUndocumented.set(true)
+
+            // Do not create index pages for empty packages
+            skipEmptyPackages.set(true)
+        }
+    }
 }
 
 publishing {

@@ -220,6 +220,11 @@ operator fun <A: Units, B: Units> UnitsRatio<A, B>.div(other: UnitsRatio<A, Squa
 @JvmName("times5") operator fun <A: Units, B: Units, C: Units>           Measure<UnitsRatio<A, UnitsProduct<B, C>>>.times(other: Measure<B>               ): Measure<UnitsRatio<A, C>>                                   = amount * other.amount * (units * other.units)
 @JvmName("times6") operator fun <A: Units, B: Units, C: Units, D: Units> Measure<UnitsRatio<A, UnitsProduct<B, C>>>.times(other: Measure<D>               ): Measure<UnitsRatio<UnitsProduct<A, D>, UnitsProduct<B, C>>> = amount * other.amount * (units * other.units)
 
+@JvmName("times8" ) operator fun <A: Units> Measure<A>.times                      (other: Measure<InverseUnits<Square<A>>>): Measure<InverseUnits<A>> = this.amount * other.amount * InverseUnits(other.units.unit.first)
+@JvmName("times9" ) operator fun <A: Units> Measure<InverseUnits<Square<A>>>.times(other: Measure<A>                      ): Measure<InverseUnits<A>> = other * this
+@JvmName("times10") operator fun <A: Units> Measure<InverseUnits<A>>.times        (other: Measure<A>                      ): Double = this.amount * other.amount
+@JvmName("times11") operator fun <A: Units> Measure<A>.times                      (other: Measure<InverseUnits<A>>        ): Double = other * this
+
 // endregion
 
 // TODO: Kapt code generation possible?
@@ -245,6 +250,8 @@ operator fun <A: Units> Measure<A>.rem(other: Measure<A>): Double = amount % oth
 @JvmName("div13") operator fun <A: Units, B: Units, C: Units>           Measure<UnitsRatio<UnitsProduct<A, A>, UnitsProduct<B, C>>>.div(other: Measure<A>                       ): Measure<UnitsRatio<A, UnitsProduct<B, C>>>                  = amount / other.amount * (units / other.units)
 @JvmName("div14") operator fun <A: Units, B: Units, C: Units, D: Units> Measure<UnitsRatio<UnitsProduct<A, B>, UnitsProduct<C, D>>>.div(other: Measure<A>                       ): Measure<UnitsRatio<B, UnitsProduct<C, D>>>                  = amount / other.amount * (units / other.units)
 @JvmName("div15") operator fun <A: Units, B: Units>                     Measure<A>.                                                 div(other: Measure<UnitsRatio<A, B>>        ): Measure<B>                                                  = amount / other.amount * (units / other.units)
+
+operator fun <A: Units> Measure<InverseUnits<A>>.div  (other: Measure<InverseUnits<Square<A>>>): Measure<A> = this.amount * other.amount * other.units.unit.first
 
 // endregion
 
@@ -303,6 +310,9 @@ private infix fun <T: Units> Number.into(unit: T): Measure<T> = Measure(this.toD
 operator fun <T: Units> Number.times(unit: T): Measure<T>               = this into unit
 operator fun <T: Units> Number.div  (unit: T): Measure<InverseUnits<T>> = this into InverseUnits(unit)
 operator fun <T: Units> Number.times(measure: Measure<T>): Measure<T> = measure * this
+
+@JvmName("divMeasure"   ) operator fun <T: Units> Number.div  (measure: Measure<T>): Measure<InverseUnits<T>> = this.toDouble() / measure.amount * InverseUnits(measure.units)
+@JvmName("divInvMeasure") operator fun <T: Units> Number.div  (measure: Measure<InverseUnits<T>>): Measure<T> = this * measure.units.unit / measure.amount
 
 operator fun <T: Units> T.times (value: Number): Measure<T> = value into this
 operator fun <T: Units> T.invoke(value: Number): Measure<T> = value into this
