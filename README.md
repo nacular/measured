@@ -1,7 +1,7 @@
 <div align="center"><img src="docs/measured.svg" alt="measured" height="70"></div>
 <div><h1>Measured: intuitive, type-safe units.</h1></div>
 
-[![Kotlin 1.4.21](https://img.shields.io/badge/Kotlin-1.4.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
+[![Kotlin 1.4.21](https://img.shields.io/badge/Kotlin-1.7.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
 Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness,
@@ -74,10 +74,8 @@ You can easily add new units and have them work like those that ship with the li
 
 ## Installation
 
-Measured uses [metadata publishing](https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#experimental-metadata-publishing-mode),
-so you can simply include the dependency as follows if you build with Gradle 5.3+ or explicitly enabling it via
-`enableFeaturePreview("GRADLE_METADATA")` in `settings.gradle`.
-
+Doodle apps are built using [Gradle](http://www.gradle.org), like other Kotlin Multi-Platform projects.
+Learn more by checking out  the Kotlin [docs](https://kotlinlang.org/docs/getting-started.html).
 
 <div style="margin-top:3em;font-weight:Bold">build.gradle.kts</div>
 

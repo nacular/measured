@@ -1,7 +1,7 @@
 <div style="font-size:70px"><img src="measured.svg" alt="measured" style="height:70px">easured</div>
 <div><h1>Type-safe, intuitive units of measure</h1></div>
 
-[![Kotlin 1.4.21](https://img.shields.io/badge/Kotlin-1.4.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
+[![Kotlin 1.4.21](https://img.shields.io/badge/Kotlin-1.7.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
 
@@ -108,14 +108,16 @@ operator fun Measure<Length>.times(mass: Mass) = amount * (unit * mass)
 
 ## Installation
 
-Measured uses [metadata publishing](https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#experimental-metadata-publishing-mode),
-so you can simply include the dependency as follows if you build with Gradle 5.3+ or explicitly enabling it via
-`enableFeaturePreview("GRADLE_METADATA")` in `settings.gradle`.
-
+Doodle apps are built using [Gradle](http://www.gradle.org), like other Kotlin Multi-Platform projects.
+Learn more by checking out  the Kotlin [docs](https://kotlinlang.org/docs/getting-started.html).
 
 <div style="margin-top:3em;font-weight:Bold">build.gradle.kts</div>
 
 ```kotlin
+plugins {
+    id ("org.jetbrains.kotlin.js") version "1.7.21"
+}
+
 kotlin {
     // ...
     dependencies {
