@@ -1,14 +1,10 @@
 <div align="center"><img src="docs/measured.svg" alt="measured" height="70"></div>
 <div><h1>Measured: intuitive, type-safe units.</h1></div>
 
-[![Kotlin 1.4.21](https://img.shields.io/badge/Kotlin-1.7.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
+[![Kotlin 1.7.21](https://img.shields.io/badge/Kotlin-1.7.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
-Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness,
-and provides intuitive, mathematical operations to work with any units.
-
-This means you can write more robust code that avoids implicit units. Time handling for example, is often done with
-implicit assumptions about milliseconds vs microseconds or seconds. Measured helps you avoid pitfalls like these.
+Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness, and provides intuitive, mathematical operations to work with any units. This means you can write more robust code that avoids implicit units. Time handling for example, is often done with implicit assumptions about milliseconds vs microseconds or seconds. Measured helps you avoid pitfalls like these.
 
 ```kotlin
 interface Clock {
@@ -27,10 +23,9 @@ val startTime = clock.now()
 handleUpdate(clock.now() - startTime)
 ```
 
-## Complex units
+## Complex Units
 
-Use division and multiplication to create compound measures. Convert between these safely and easily with the
-`as` and `in` methods.
+Use division and multiplication to create compound measures. Convert between these safely and easily with the `as` and `in` methods.
 
 ```kotlin
 val velocity     = 5 * meters / seconds
@@ -47,10 +42,9 @@ println(distance `as` miles     ) // 10.25262467191601 mi
 println(5 * miles / hours `as` meters / seconds) // 2.2352 m/s
 ```
 
-The `as` method converts a `Measure` from its current `Unit` to another. The result is another `Measure`. While `in`
-returns the magnitude of a `Measure` in the given `Unit`.
+The `as` method converts a `Measure` from its current `Unit` to another. The result is another `Measure`. While `in` returns the magnitude of a `Measure` in the given `Unit`.
 
-## Avoid raw values
+## Avoid Raw Values
 
 Measure's support of math operators helps you avoid working with raw values directly.
 
@@ -58,9 +52,7 @@ Measure's support of math operators helps you avoid working with raw values dire
 val marathon              = 26 * miles
 val velocity              = 3 * kilometers / hours
 val timeToRunHalfMarathon = (marathon / 2) / velocity // 6.973824 hr
-``` 
 
-```kotlin
 typealias Velocity = UnitRatio<Length, Time>
 
 fun calculateTime(distance: Measure<Length>, velocity: Measure<Velocity>): Measure<Time> {

@@ -1,3 +1,6 @@
+import org.gradle.configurationcache.extensions.capitalized
+import java.net.URL
+
 buildscript {
     val kotlinVersion: String by System.getProperties()
 
@@ -14,7 +17,7 @@ plugins {
     val kotlinVersion: String by System.getProperties()
 
     id ("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-    id ("org.jetbrains.dokka"               ) version "1.7.20"
+    id ("org.jetbrains.dokka"               ) version "1.9.0"
     id ("maven-publish"                     )
     signing
 }
@@ -86,20 +89,31 @@ val dokkaJar by tasks.creating(Jar::class) {
 }
 
 tasks.dokkaHtml {
+    moduleName.set(project.name.capitalized())
     outputDirectory.set(buildDir.resolve("javadoc"))
 
-    dokkaSourceSets {
-        configureEach {
-            includeNonPublic.set(false)
+    dokkaSourceSets.configureEach {
+        includeNonPublic.set(false)
 
-            // Do not output deprecated members. Applies globally, can be overridden by packageOptions
-            skipDeprecated.set(true)
+        // Do not output deprecated members. Applies globally, can be overridden by packageOptions
+        skipDeprecated.set(true)
 
-            // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
-            reportUndocumented.set(true)
+        // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
+        reportUndocumented.set(true)
 
-            // Do not create index pages for empty packages
-            skipEmptyPackages.set(true)
+        // Do not create index pages for empty packages
+        skipEmptyPackages.set(true)
+
+        includes.from("Module.md")
+
+        sourceLink {
+            localDirectory.set(rootProject.projectDir)
+            remoteUrl.set(URL("https://github.com/nacular/measured/tree/master"))
+            remoteLineSuffix.set("#L")
+        }
+
+        externalDocumentationLink {
+            url.set(URL("https://kotlinlang.org/api/latest/jvm/stdlib/"))
         }
     }
 }
@@ -158,25 +172,6 @@ signing {
     })
     useGpgCmd()
     sign(publishing.publications)
-}
-
-tasks.dokkaHtml {
-    outputDirectory.set(buildDir.resolve("javadoc"))
-
-    dokkaSourceSets {
-        configureEach {
-            includeNonPublic.set(false)
-
-            // Do not output deprecated members. Applies globally, can be overridden by packageOptions
-            skipDeprecated.set(true)
-
-            // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
-            reportUndocumented.set(true)
-
-            // Do not create index pages for empty packages
-            skipEmptyPackages.set(true)
-        }
-    }
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {

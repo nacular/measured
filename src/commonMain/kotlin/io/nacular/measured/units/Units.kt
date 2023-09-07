@@ -90,16 +90,21 @@ fun <A: Units, B: A> minOf(first: A, second: B) = if (first < second) first else
 
 
 /**
- * A quantity with a unit type
+ * A quantity with a unit type.
+ *
+ * @property amount of the measure (i.e. it's coefficient)
+ * @property units  of the measure
  */
 class Measure<T: Units>(val amount: Double, val units: T): Comparable<Measure<T>> {
     /**
-     * Convert this type into another compatible type.
-     * Type must share parent
-     * (eg Mile into Kilometer, because they both are made from Distance)
+     * Convert this Measure into another compatible one with different units. Type must share parent
+     * (i.e. Mile into Kilometer, because they both are made from Distance)
      */
     infix fun <A: T> `as`(other: A): Measure<T> = if (units == other) this else Measure(this `in` other, other)
 
+    /**
+     * Gets the value of the Measure in the given unit.
+     */
     infix fun <A: T> `in`(other: A): Double = if (units == other) amount else  amount * (units.ratio / other.ratio)
 
     /**
@@ -125,6 +130,9 @@ class Measure<T: Units>(val amount: Double, val units: T): Comparable<Measure<T>
      */
     operator fun div(other: Number): Measure<T> = amount / other.toDouble() * units
 
+    /**
+     * Rounds this Measure to the closest integer value.
+     */
     fun roundToInt(): Measure<T> = amount.roundToInt() * units
 
     /**
