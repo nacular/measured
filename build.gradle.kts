@@ -49,34 +49,44 @@ kotlin {
             }
         }
     }
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
+        compilations.all {
+            kotlinOptions {
+                moduleKind = "umd"
+                sourceMap  = !releaseBuild
+                if (sourceMap) {
+                    sourceMapEmbedSources = "always"
+                }
+            }
+        }
+        browser {
+            testTask { enabled = false }
+        }
+    }
 
     val junitVersion: String by project
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-common"))
-            }
+        commonMain.dependencies {
+            implementation(kotlin("stdlib-common"))
         }
 
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
+        commonTest.dependencies {
+            implementation(kotlin("test-common"))
+            implementation(kotlin("test-annotations-common"))
         }
 
-        jvm().compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-                implementation(kotlin("test-junit"))
-            }
+        jvmTest.dependencies {
+            implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+            implementation(kotlin("test-junit"))
         }
 
-        js().compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
+        jsTest.dependencies {
+            implementation(kotlin("test-js"))
+        }
+
+        val wasmJsMain by getting {
         }
     }
 }
@@ -179,6 +189,6 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJ
     rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
 }
 
-rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
-}
+//rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+//    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
+//}
