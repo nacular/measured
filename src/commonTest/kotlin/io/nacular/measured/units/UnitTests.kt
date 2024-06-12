@@ -71,14 +71,14 @@ class UnitRatioTests {
     }
 
     @Test @JsName("doubleReciprocal")
-    fun `1 ÷ (1 ÷ a) == a`() {
+    fun `1 ÷﹙1 ÷ a﹚== a`() {
         val a = UnitsRatio(UnitsA("a"), UnitsB("b"))
 
         expect(a, "$a.reciprocal.reciprocal") { a.reciprocal.reciprocal }
     }
 
     @Test @Ignore @JsName("divAWorks")
-    fun `(A÷B) ÷ A = 1÷B`() {
+    fun `﹙A÷B﹚÷ A = 1÷B`() {
         val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
         val b = UnitsB("a", 10.0)
 
@@ -86,7 +86,7 @@ class UnitRatioTests {
     }
 
     @Test @JsName("timesBWorks")
-    fun `(A÷B) * B = A`() {
+    fun `﹙A÷B﹚＊ B = A`() {
         val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
         val b = UnitsB("b", 1.0)
 
@@ -94,14 +94,14 @@ class UnitRatioTests {
     }
 
     @Test @JsName("timesInverseWorks")
-    fun `(A÷B) * (B÷A) = 1`() {
+    fun `﹙A÷B﹚＊﹙B÷A﹚= 1`() {
         val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
 
         expect(1.0, "$a * 1/$a") { a * a.reciprocal }
     }
 
     @Test @JsName("divSelfWorks")
-    fun `(A÷B) ÷ (A÷B) = 1`() {
+    fun `﹙A÷B﹚÷﹙A÷B﹚= 1`() {
         val a = UnitsRatio(UnitsA("a", 10.0), UnitsB("b"))
 
         expect(1.0, "$a / $a") { a / a }
@@ -191,7 +191,7 @@ class MeasureTests {
     }
 
     @Test @JsName("timesDivideOperatorsWork")
-    fun `* ÷`() {
+    fun `＊ ÷`() {
         val op: (Operation<UnitsA>) -> Unit = {
             val unit    = UnitsA("a")
             val start   = 10.0
@@ -203,6 +203,22 @@ class MeasureTests {
 
         listOf(times, divide).forEach(op)
     }
+
+    @Test @JsName("remainderWorks")
+    fun `a ﹪ b`() {
+        val op: (Remainder<UnitsA>) -> Unit = {
+            val unit     = UnitsA("a")
+            val start    = 10.0
+            val value    = 2.3
+            val measure1 = Measure(start, unit)
+            val measure2 = Measure(value, UnitsA("b", 0.5))
+
+            expect(Measure(it((measure1 `in` unit), value), unit)) { it(measure1, value) }
+            expect((measure1 `in` unit) % (measure2 `in` unit)) { it(measure1, measure2) }
+        }
+
+        op(Remainder())
+    }
 }
 
 interface Operation<T: Units> {
@@ -211,11 +227,17 @@ interface Operation<T: Units> {
 }
 
 private val times = object: Operation<UnitsA> {
-    override fun invoke(first: Double,         second: Double) = first * second
+    override fun invoke(first: Double,          second: Double) = first * second
     override fun invoke(first: Measure<UnitsA>, second: Double) = first * second
 }
 
 private val divide = object: Operation<UnitsA> {
-    override fun invoke(first: Double,         second: Double) = first / second
+    override fun invoke(first: Double,          second: Double) = first / second
     override fun invoke(first: Measure<UnitsA>, second: Double) = first / second
+}
+
+class Remainder<T: Units> {
+    operator fun invoke(first: Double,     second: Double    ): Double     = first % second
+    operator fun invoke(first: Measure<T>, second: Double    ): Measure<T> = first % second
+    operator fun invoke(first: Measure<T>, second: Measure<T>): Double     = first % second
 }

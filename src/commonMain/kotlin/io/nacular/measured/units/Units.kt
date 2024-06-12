@@ -241,7 +241,9 @@ operator fun <A: Units> InverseUnits<A>.div(other: A): Measure<InverseUnits<Squa
 // endregion
 
 // TODO: Kapt code generation possible?
-operator fun <A: Units> Measure<A>.rem(other: Measure<A>): Double = amount % other.amount * (units.ratio % other.units.ratio)
+operator fun <A: Units> Measure<A>.rem(other: Measure<A>): Double = (this `in` units) % (other `in` units)
+
+operator fun <A: Units> Measure<A>.rem(other: Double): Measure<A> = (amount % other) * units
 
 // region ================ Measure / Measure Math ========================
 

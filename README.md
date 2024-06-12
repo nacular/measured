@@ -1,8 +1,9 @@
-<div align="center"><img src="docs/measured.svg" alt="measured" height="70"></div>
-<div><h1>Measured: intuitive, type-safe units.</h1></div>
+<div style="text-align:center"><img src="docs/measured.svg" alt="measured" style="height:200px;margin-bottom:50px"></div>
+<div style="text-align:center"><h1>Measured: intuitive, type-safe units</h1></div>
 
-[![Kotlin 1.7.21](https://img.shields.io/badge/Kotlin-1.7.21-blue.svg?style=for-the-badge&logo=kotlin)](http://kotlinlang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
+[![Kotlin 1.9.23](https://img.shields.io/badge/Kotlin_1.9.23-blue.svg?style=for-the-badge&logo=kotlin&logoColor=white)](http://kotlinlang.org)
+[![JS, Wasm, JVM, iOS, Mac](https://img.shields.io/badge/JS%2C_Wasm%2C_JVM%2C_iOS%2C_Mac-purple?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/docs/js-overview.html)
+[![License: MIT](https://img.shields.io/badge/MIT_License-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
 Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness, and provides intuitive, mathematical operations to work with any units. This means you can write more robust code that avoids implicit units. Time handling for example, is often done with implicit assumptions about milliseconds vs microseconds or seconds. Measured helps you avoid pitfalls like these.
 
@@ -49,11 +50,11 @@ The `as` method converts a `Measure` from its current `Unit` to another. The res
 Measure's support of math operators helps you avoid working with raw values directly.
 
 ```kotlin
+// typealias Velocity = UnitRatio<Length, Time> defined in the library
+
 val marathon              = 26 * miles
 val velocity              = 3 * kilometers / hours
 val timeToRunHalfMarathon = (marathon / 2) / velocity // 6.973824 hr
-
-typealias Velocity = UnitRatio<Length, Time>
 
 fun calculateTime(distance: Measure<Length>, velocity: Measure<Velocity>): Measure<Time> {
     return velocity * distance
@@ -98,7 +99,7 @@ val a: UnitProduct<Angle, Time> = radians * seconds
 val b: UnitProduct<Time, Angle> = seconds * radians
 ```
 
-!> Notice the types for a and b are different
+Notice the types for a and b are different.
 
 This can be mitigated on a case by case basis with explicit extension functions that help with order. For example,
 you can ensure that `kg` is sorted before `m` by providing the following extension.
@@ -129,4 +130,4 @@ for conversion.
 ## Contact
 
 - Please see [issues](https://github.com/nacular/measured/issues) to share bugs you find, make feature requests, or just get help with your questions.
-- Don't hesitate to ⭐️ [star](https://github.com/nacular/measured) if you find this project useful.
+- Let us know what you think by leaving a comment or a star ⭐️.

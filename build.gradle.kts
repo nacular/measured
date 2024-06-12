@@ -2,23 +2,20 @@ import org.gradle.configurationcache.extensions.capitalized
 import java.net.URL
 
 buildscript {
-    val kotlinVersion: String by System.getProperties()
-
     repositories {
         mavenCentral()
     }
 
     dependencies {
-        classpath ("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath ("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}")
     }
 }
 
 plugins {
-    val kotlinVersion: String by System.getProperties()
-
-    id ("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-    id ("org.jetbrains.dokka"               ) version "1.9.0"
-    id ("maven-publish"                     )
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.kover)
+    id ("maven-publish"     )
     signing
 }
 
@@ -29,28 +26,20 @@ repositories {
 kotlin {
     val releaseBuild = project.hasProperty("release")
 
-    jvm().compilations.all {
-        kotlinOptions {
-            jvmTarget = "1.8"
+    jvm {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
         }
     }
-    js {
+    js  {
         browser {
             testTask {
                 enabled = false
             }
         }
-    }.compilations.all {
-        kotlinOptions {
-            moduleKind = "umd"
-            sourceMap  = !releaseBuild
-            if (sourceMap) {
-                sourceMapEmbedSources = "always"
-            }
-        }
-    }
-    @Suppress("OPT_IN_USAGE")
-    wasmJs {
+
         compilations.all {
             kotlinOptions {
                 moduleKind = "umd"
@@ -60,12 +49,55 @@ kotlin {
                 }
             }
         }
+    }
+
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
         browser {
             testTask { enabled = false }
         }
+        compilations.all {
+            kotlinOptions {
+                moduleKind = "umd"
+                sourceMap  = !releaseBuild
+                if (sourceMap) {
+                    sourceMapEmbedSources = "always"
+                }
+            }
+        }
     }
 
-    val junitVersion: String by project
+    listOf(
+        iosX64               (),
+        iosArm64             (),
+        iosSimulatorArm64    (),
+        watchosX64           (),
+        watchosArm64         (),
+        watchosSimulatorArm64(),
+        macosX64             (),
+        macosArm64           (),
+        tvosX64              (),
+        tvosArm64            (),
+        tvosSimulatorArm64   (),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "measured"
+            isStatic = true
+        }
+
+        val isMacOS   = System.getProperty("os.name"   ) == "Mac OS X"
+        val osVersion = System.getProperty("os.version").toDoubleOrNull() ?: 0.0
+
+        // Use this flag if using MacOS 14 or newer
+        if (isMacOS && osVersion >= 14.0) {
+            it.compilations.all {
+                compilerOptions.configure {
+                    freeCompilerArgs.add("-linker-options")
+                    freeCompilerArgs.add("-ld64"          )
+                }
+            }
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -78,15 +110,12 @@ kotlin {
         }
 
         jvmTest.dependencies {
-            implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+            implementation(libs.bundles.test.libs)
             implementation(kotlin("test-junit"))
         }
 
         jsTest.dependencies {
             implementation(kotlin("test-js"))
-        }
-
-        val wasmJsMain by getting {
         }
     }
 }
@@ -100,7 +129,8 @@ val dokkaJar by tasks.creating(Jar::class) {
 
 tasks.dokkaHtml {
     moduleName.set(project.name.capitalized())
-    outputDirectory.set(buildDir.resolve("javadoc"))
+
+    outputDirectory.set(layout.buildDirectory.dir("javadoc"))
 
     dokkaSourceSets.configureEach {
         includeNonPublic.set(false)
@@ -185,7 +215,7 @@ signing {
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download    = false
+//    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download    = false
     rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
 }
 
