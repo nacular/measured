@@ -1,4 +1,4 @@
-<div style="text-align:center"><img src="docs/measured.svg" alt="measured" style="height:200px;margin-bottom:50px"></div>
+<div style="text-align:center"><img src="docs/img/measured.png" alt="measured" style="height:200px;margin-bottom:50px"></div>
 <div style="text-align:center"><h1>Measured: intuitive, type-safe units</h1></div>
 
 [![Kotlin 1.9.23](https://img.shields.io/badge/Kotlin_1.9.23-blue.svg?style=for-the-badge&logo=kotlin&logoColor=white)](http://kotlinlang.org)
