@@ -99,6 +99,9 @@ kotlin {
         }
     }
 
+    linuxX64  ()
+    linuxArm64()
+
     sourceSets {
         commonMain.dependencies {
             implementation(kotlin("stdlib-common"))

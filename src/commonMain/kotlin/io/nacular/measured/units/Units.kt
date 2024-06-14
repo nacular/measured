@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
  * set of different representations of the unit.
  *
  * @constructor
- * @param suffix to use when printing the unit in a human readable way
+ * @param suffix to use when printing the unit in a human-readable way
  * @param ratio of this unit relative to the base-unit
  */
 abstract class Units(val suffix: String, val ratio: Double = 1.0) {
@@ -210,6 +210,7 @@ class Measure<T: Units>(val amount: Double, val units: T): Comparable<Measure<T>
 @JvmName("div2")   operator fun <A: Units, B: Units>                     UnitsRatio<A, B>.                                  div(other: UnitsRatio<B, A>): UnitsRatio<UnitsProduct<A, A>, UnitsProduct<B, B>> = this * other.reciprocal
 @JvmName("div3")   operator fun <A: Units, B: Units, C: Units, D: Units> UnitsRatio<A, B>.                                  div(other: UnitsRatio<C, D>): UnitsRatio<UnitsProduct<A, D>, UnitsProduct<B, C>> = this * other.reciprocal
                    operator fun <A: Units, B: Units>                     UnitsRatio<A, B>.                                  div(other: B               ): UnitsRatio<A, UnitsProduct<B, B>>                  = numerator / (denominator * other)
+                   operator fun <A: Units, B: Units>                     UnitsRatio<A, B>.                                  div(other: A               ): Measure<InverseUnits<B>>                           = (numerator.ratio / other.ratio) / denominator
 @JvmName("div1")   operator fun <A: Units, B: Units>                     UnitsRatio<UnitsProduct<A, A>, UnitsProduct<B, B>>.div(other: A               ): Measure<UnitsRatio<A, UnitsProduct<B, B>>>         = numerator.first.ratio / other.ratio * (numerator.second / denominator)
 @JvmName("div2")   operator fun <A: Units, B: Units, C: Units>           UnitsRatio<UnitsProduct<A, A>, UnitsProduct<B, C>>.div(other: A               ): Measure<UnitsRatio<A, UnitsProduct<B, C>>>         = numerator.first.ratio / other.ratio * (numerator.second / denominator)
 @JvmName("div3")   operator fun <A: Units, B: Units, C: Units, D: Units> UnitsRatio<UnitsProduct<A, B>, UnitsProduct<C, D>>.div(other: A               ): Measure<UnitsRatio<B, UnitsProduct<C, D>>>         = numerator.first.ratio / other.ratio * (numerator.second / denominator)
@@ -258,7 +259,8 @@ operator fun <A: Units> Measure<A>.rem(other: Double): Measure<A> = (amount % ot
 @JvmName("div7" ) operator fun <A: Units, B: Units>           Measure<UnitsProduct<A, B>>.div(other: Measure<UnitsProduct<A, A>>): Measure<UnitsRatio<B, A>> = amount / other.amount * (units / other.units)
 @JvmName("div8" ) operator fun <A: Units, B: Units>           Measure<UnitsProduct<A, B>>.div(other: Measure<UnitsProduct<B, B>>): Measure<UnitsRatio<A, B>> = amount / other.amount * (units / other.units)
 
-@JvmName("div9" ) operator fun <A: Units, B: Units>                     Measure<UnitsRatio<A, B>>.                                  div(other: Measure<B>                       ): Measure<UnitsRatio<A, UnitsProduct<B, B>>>                  = amount / other.amount * (units / other.units)
+@JvmName("div19") operator fun <A: Units, B: Units>                     Measure<UnitsRatio<A, B>>.                                  div(other: Measure<B>                       ): Measure<UnitsRatio<A, UnitsProduct<B, B>>>                  = amount / other.amount * (units / other.units)
+@JvmName("div9" ) operator fun <A: Units, B: Units>                     Measure<UnitsRatio<A, B>>.                                  div(other: Measure<A>                       ): Measure<InverseUnits<B>>                                    = amount / other.amount * (units / other.units)
 @JvmName("div10") operator fun <A: Units, B: Units, C: Units, D: Units> Measure<UnitsRatio<A, B>>.                                  div(other: Measure<UnitsRatio<C, D>>        ): Measure<UnitsRatio<UnitsProduct<A, D>, UnitsProduct<B, C>>> = amount / other.amount * (units / other.units)
 @JvmName("div11") operator fun <A: Units, B: Units>                     Measure<UnitsRatio<A, B>>.                                  div(other: Measure<UnitsRatio<A, Square<B>>>): Measure<B>                                                  = amount / other.amount * (units / other.units)
 @JvmName("div12") operator fun <A: Units, B: Units>                     Measure<UnitsRatio<UnitsProduct<A, A>, UnitsProduct<B, B>>>.div(other: Measure<A>                       ): Measure<UnitsRatio<A, UnitsProduct<B, B>>>                  = amount / other.amount * (units / other.units)

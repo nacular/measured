@@ -17,11 +17,15 @@ fun handleUpdate(duration: Measure<Time>) {
     reportTimeInMillis(duration `in` milliseconds)
 }
 
-val startTime = clock.now()
+fun update(clock: Clock) {
+    val startTime = clock.now()
 
 //...
 
-handleUpdate(clock.now() - startTime)
+    handleUpdate(clock.now() - startTime)
+}
+
+fun reportTimeInMillis(time: Double) {}
 ```
 
 ## Complex Units
@@ -33,8 +37,8 @@ val velocity     = 5 * meters / seconds
 val acceleration = 9 * meters / (seconds * seconds)
 val time         = 1 * minutes
 
-//  d = vt + ½at²
-val distance     = velocity * time + 1.0/2 * acceleration * time * time
+//  d            = vt + ½at²
+val distance     = velocity * time + 1.0 / 2 * acceleration * time * time
 
 println(distance                ) // 16500 m
 println(distance `as` kilometers) // 16.5 km
@@ -57,36 +61,52 @@ val velocity              = 3 * kilometers / hours
 val timeToRunHalfMarathon = (marathon / 2) / velocity // 6.973824 hr
 
 fun calculateTime(distance: Measure<Length>, velocity: Measure<Velocity>): Measure<Time> {
-    return velocity * distance
+    return distance / velocity
 }
 ```
 
 ## Extensible
 
-You can easily add new units and have them work like those that ship with the library.
-
-## Installation
-
-Doodle apps are built using [Gradle](http://www.gradle.org), like other Kotlin Multi-Platform projects.
-Learn more by checking out  the Kotlin [docs](https://kotlinlang.org/docs/getting-started.html).
-
-<div style="margin-top:3em;font-weight:Bold">build.gradle.kts</div>
+You can easily add new conversions to existing units and they will work as expected.
 
 ```kotlin
-// ...
+val hands = Length("hands", 0.1016)                 // define new Length unit
 
-repositories {
-    mavenCentral()
-}
+val l1 = 5 * hands
+val l2 = l1 `as` meters                             // convert to Measure with new unit
 
-// ...
+val v: Measure<Velocity> = 100_000 * hands / hours
 
-kotlin {
-    // ...
-    dependencies {
-        implementation ("io.nacular.measured:measured:$measuredVersion")
+println("$l1 == $l2 or ${l1 `in` meters}")          // 5.0 hands == 0.508 m or 0.508
+
+println(v `as` hands / seconds)                     // 27.77777777777778 hands/s
+println(v `as` miles / hours  )                     // 6.313131313131313 mi/hr
+```
+
+You can also define entirely new units with a set of conversions and have them interact with other units.
+
+```kotlin
+// Define a custom Units type
+class Blits(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
+    operator fun div(other: Blits) = ratio / other.ratio
+
+    companion object {
+        // Various conversions
+
+        val bloop = Blits("bp"        ) // the base unit
+        val blick = Blits("bk",   10.0)
+        val blat  = Blits("cbt", 100.0)
     }
 }
+
+// Some typealiases to help with readability
+
+typealias BlitVelocity     = UnitsRatio<Blits, Time>
+typealias BlitAcceleration = UnitsRatio<Blits, UnitsProduct<Time, Time>>
+
+val m1: Measure<BlitAcceleration>   = 5 * blat / (seconds * seconds)
+val m2: Measure<BlitVelocity>       = m1 * 10 * minutes
+val m3: Measure<InverseUnits<Time>> = m2 / (5 * blick)
 ```
 
 ## Current Limitations
@@ -95,8 +115,8 @@ Measured uses Kotlin's type system to enable compile-time validation. This works
 are things the type system currently does not support. For example, `Units` and `Measures` are **order-sensitive**.
 
 ```kotlin
-val a: UnitProduct<Angle, Time> = radians * seconds
-val b: UnitProduct<Time, Angle> = seconds * radians
+val a: UnitsProduct<Angle, Time> = radians * seconds
+val b: UnitsProduct<Time, Angle> = seconds * radians
 ```
 
 Notice the types for a and b are different.
@@ -107,8 +127,7 @@ you can ensure that `kg` is sorted before `m` by providing the following extensi
 ```kotlin
 // ensure Mass comes before Length when Length * Mass
 operator fun Length.times(mass: Mass) = mass * this
-```
-```kotlin
+
 val f1 = 1 * (kilograms * meters) / (seconds * seconds)
 val f2 = 1 * (meters * kilograms) / (seconds * seconds)
 
@@ -119,13 +138,27 @@ You can also define an extension on Measure to avoid needing parentheses around 
 
 ```kotlin
 // ensure Mass comes before Length when Measure<Length> multiplied by Mass
-operator fun Measure<Length>.times(mass: Mass) = amount * (unit * mass)
+operator fun Measure<Length>.times(mass: Mass) = amount * (units * mass)
 ```
 
 Measured currently only supports linear units where all members of a given unit are related by a single magnitude. This
 applies to many units, but Fahrenheit and Celsius are examples of temperature units that requires more than a multiplier
 for conversion.
 
+
+## Installation
+
+Measured is a Kotlin [Multi-platform](https://kotlinlang.org/docs/multiplatform-get-started.html) library that targets a wide range of platforms. Simply add a dependency to your app's Gradle build file as follows to start using it.
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.nacular.measured:measured:$VERSION")
+}
+```
 
 ## Contact
 
