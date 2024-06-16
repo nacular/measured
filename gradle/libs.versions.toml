@@ -2,7 +2,7 @@
 
 kotlinVersion     = { strictly = "1.9.23" }
 jupiterVersion    = { strictly = "5.10.0" }
-dokkaVersion      = { strictly = "1.9.0"  }
+dokkaVersion      = { strictly = "1.9.20" }
 koverVersion      = { strictly = "0.8.1"  }
 
 [libraries]

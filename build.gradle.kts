@@ -1,5 +1,9 @@
 import org.gradle.configurationcache.extensions.capitalized
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URL
+import java.util.*
 
 buildscript {
     repositories {
@@ -7,7 +11,8 @@ buildscript {
     }
 
     dependencies {
-        classpath ("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}")
+        classpath("org.jetbrains.dokka:dokka-base:${libs.versions.dokkaVersion.get()}")
     }
 }
 
@@ -25,6 +30,7 @@ repositories {
 
 kotlin {
     val releaseBuild = project.hasProperty("release")
+    val libName      = project.name.lowercase(Locale.getDefault())
 
     jvm {
         compilations.all {
@@ -81,8 +87,9 @@ kotlin {
         tvosSimulatorArm64   (),
     ).forEach {
         it.binaries.framework {
-            baseName = "measured"
+            baseName = libName
             isStatic = true
+            binaryOption("bundleVersion", project.version.toString())
         }
 
         val isMacOS   = System.getProperty("os.name"   ) == "Mac OS X"
@@ -90,6 +97,9 @@ kotlin {
 
         // Use this flag if using MacOS 14 or newer
         if (isMacOS && osVersion >= 14.0) {
+//            it.binaries.sharedLib {
+//                baseName = libName
+//            }
             it.compilations.all {
                 compilerOptions.configure {
                     freeCompilerArgs.add("-linker-options")
@@ -99,8 +109,18 @@ kotlin {
         }
     }
 
-    linuxX64  ()
-    linuxArm64()
+    androidNativeX64  ()
+    androidNativeArm32()
+
+    listOf(
+        mingwX64  (), // Windows x64
+        linuxX64  (),
+        linuxArm64(),
+    ).forEach {
+        it.binaries.sharedLib {
+            baseName = libName
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -126,6 +146,20 @@ kotlin {
                 implementation(kotlin("test-wasm-js"))
             }
         }
+    }
+}
+
+fun DokkaBaseConfiguration.configDokka() {
+    homepageLink                          = "https://github.com/nacular/measured"
+    customAssets                          = listOf(file("logo-icon.svg"))
+    footerMessage                         = "(c) 2024 Nacular"
+    separateInheritedMembers              = true
+    mergeImplicitExpectActualDeclarations = true
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+        configDokka()
     }
 }
 
@@ -174,9 +208,9 @@ publishing {
         }
         all {
             pom {
-                name.set       ("Measured"                           )
-                description.set("Units of measure for Kotlin"        )
-                url.set        ("https://github.com/nacular/measured")
+                name.set       ("Measured"                             )
+                description.set("Intuitive, type-safe units for Kotlin")
+                url.set        ("https://github.com/nacular/measured"  )
                 licenses {
                     license {
                         name.set("MIT"                                )
