@@ -22,6 +22,8 @@ plugins {
     alias(libs.plugins.kover)
     id ("maven-publish"     )
     signing
+    alias(libs.plugins.nmcp            ) apply false
+    alias(libs.plugins.nmcp.aggregation)
 }
 
 repositories {
@@ -257,11 +259,14 @@ signing {
     sign(publishing.publications)
 }
 
-rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
-//    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download    = false
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
+nmcpAggregation {
+    centralPortal {
+        username       = findProperty("mavenCentralUsername")?.toString()
+        password       = findProperty("mavenCentralPassword")?.toString()
+        publishingType = "USER_MANAGED"
+    }
 }
 
-//rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
-//    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
-//}
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
+}

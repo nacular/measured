@@ -219,6 +219,19 @@ class MeasureTests {
 
         op(Remainder())
     }
+
+    @Test @JsName("toNearestWorks")
+    fun `to nearest works`() {
+        val unit = UnitsA("u")
+
+        listOf(
+            Pair( 25.67, 0.1 ),
+            Pair(-50.00, 1.0 ),
+            Pair(152.45, 10.0),
+        ).forEach { (magnitude, nearest) ->
+            expect((kotlin.math.round(magnitude / nearest) * nearest) * unit) { (magnitude * unit).toNearest(nearest) }
+        }
+    }
 }
 
 interface Operation<T: Units> {

@@ -380,8 +380,8 @@ fun <T: Units> round(measure: Measure<T>, toNearest: Measure<T>): Measure<T> = w
 }
 
 /**
- * Returns a [Measure] that is rounded to he closest multiple of [toNearest], and has the
- * the units of [toNearest].
+ * Returns a [Measure] that is rounded to the closest multiple of [value], and has
+ * the units of [value].
  *
  * ```
  *
@@ -392,6 +392,20 @@ fun <T: Units> round(measure: Measure<T>, toNearest: Measure<T>): Measure<T> = w
  * ```
  */
 infix fun <T: Units> Measure<T>.toNearest(value: Measure<T>): Measure<T> = round(this, toNearest = value)
+
+/**
+ * Returns a [Measure] that is rounded to the closest multiple of [value], and has
+ * the same units.
+ *
+ * ```
+ *
+ * val length = 25.45 * inches
+ *
+ * length toNearest 1   // 25.0 inches
+ * length toNearest 0.1 // 25.5 inches
+ * ```
+ */
+infix fun <T: Units> Measure<T>.toNearest(value: Double): Measure<T> = round(this, toNearest = value * units)
 
 /**
  * @return the absolute value of this measure, retaining its units.

@@ -4,6 +4,8 @@ kotlinVersion     = { strictly = "1.9.23" }
 jupiterVersion    = { strictly = "5.10.0" }
 dokkaVersion      = { strictly = "1.9.20" }
 koverVersion      = { strictly = "0.8.1"  }
+nmcpVersion       = { strictly = "1.0.2"   }
+
 
 [libraries]
 
@@ -14,6 +16,8 @@ junit-jupiter     = { module = "org.junit.jupiter:junit-jupiter", version.ref = 
 dokka             = { id = "org.jetbrains.dokka",                 version.ref = "dokkaVersion"  }
 kover             = { id = "org.jetbrains.kotlinx.kover",         version.ref = 'koverVersion'  }
 kotlin            = { id = "org.jetbrains.kotlin.multiplatform",  version.ref = 'kotlinVersion' }
+nmcp              = { id = "com.gradleup.nmcp",                   version.ref = "nmcpVersion"   }
+nmcp-aggregation  = { id = "com.gradleup.nmcp.aggregation",       version.ref = "nmcpVersion"   }
 
 [bundles]
 
