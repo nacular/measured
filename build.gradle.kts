@@ -234,21 +234,21 @@ publishing {
         }
     }
 
-    repositories {
-        maven {
-            val releaseBuild = project.hasProperty("release")
-
-            url = uri(when {
-                releaseBuild -> "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                else         -> "https://oss.sonatype.org/content/repositories/snapshots"
-            })
-
-            credentials {
-                username = findProperty("suser")?.toString()
-                password = findProperty("spwd" )?.toString()
-            }
-        }
-    }
+//    repositories {
+//        maven {
+//            val releaseBuild = project.hasProperty("release")
+//
+//            url = uri(when {
+//                releaseBuild -> "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+//                else         -> "https://oss.sonatype.org/content/repositories/snapshots"
+//            })
+//
+//            credentials {
+//                username = findProperty("suser")?.toString()
+//                password = findProperty("spwd" )?.toString()
+//            }
+//        }
+//    }
 }
 
 signing {
@@ -265,6 +265,9 @@ nmcpAggregation {
         password       = findProperty("mavenCentralPassword")?.toString()
         publishingType = "USER_MANAGED"
     }
+
+    // Publish all projects that apply the 'maven-publish' plugin
+    publishAllProjectsProbablyBreakingProjectIsolation()
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
