@@ -148,7 +148,7 @@ val dokkaHtmlJar by tasks.registering(Jar::class) {
 
 dokka {
     dokkaPublications.html {
-        moduleName.set(project.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() })
+        moduleName.set(project.name.replaceFirstChar { it.titlecase() })
         moduleVersion.set(project.version.toString())
         outputDirectory.set(layout.buildDirectory.dir("documentation/html"))
         dokkaSourceSets.configureEach {

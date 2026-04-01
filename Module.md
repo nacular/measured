@@ -1,5 +1,9 @@
 # Module Measured
 
+<div style="text-align:center"><img src="https://nacular.github.io/measured/img/measured.png" alt="Measured logo" style="height:200px"></div>
+<div style="text-align:center; margin-bottom: 50px"><h1>Intuitive, type-safe units</h1></div>
+
+
 Measured provides a safe and simple way to work with units of measure. It uses the compiler to ensure correctness, and provides intuitive, mathematical operations to work with any units. This means you can write more robust code that avoids implicit units. Time handling for example, is often done with implicit assumptions about milliseconds vs microseconds or seconds. Measured helps you avoid pitfalls like these.
 
 ```kotlin
