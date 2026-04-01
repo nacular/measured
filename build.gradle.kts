@@ -1,8 +1,6 @@
-import org.gradle.configurationcache.extensions.capitalized
-import org.jetbrains.dokka.base.DokkaBase
-import org.jetbrains.dokka.base.DokkaBaseConfiguration
-import org.jetbrains.dokka.gradle.DokkaTask
-import java.net.URL
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind.MODULE_UMD
+import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.*
 
 buildscript {
@@ -12,13 +10,12 @@ buildscript {
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}")
-        classpath("org.jetbrains.dokka:dokka-base:${libs.versions.dokkaVersion.get()}")
     }
 }
 
 plugins {
     alias(libs.plugins.kotlin)
-    alias(libs.plugins.dokka)
+    alias(libs.plugins.dokkaHtml)
     alias(libs.plugins.kover)
     id ("maven-publish"     )
     signing
@@ -35,10 +32,8 @@ kotlin {
     val libName      = project.name.lowercase(Locale.getDefault())
 
     jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
     js  {
@@ -48,13 +43,11 @@ kotlin {
             }
         }
 
-        compilations.all {
-            kotlinOptions {
-                moduleKind = "umd"
-                sourceMap  = !releaseBuild
-                if (sourceMap) {
-                    sourceMapEmbedSources = "always"
-                }
+        compilerOptions {
+            moduleKind.set(MODULE_UMD)
+            sourceMap.set(!releaseBuild)
+            if (sourceMap.get()) {
+                sourceMapEmbedSources.set(SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
             }
         }
     }
@@ -64,13 +57,11 @@ kotlin {
         browser {
             testTask { enabled = false }
         }
-        compilations.all {
-            kotlinOptions {
-                moduleKind = "umd"
-                sourceMap  = !releaseBuild
-                if (sourceMap) {
-                    sourceMapEmbedSources = "always"
-                }
+        compilerOptions {
+            moduleKind.set(MODULE_UMD)
+            sourceMap.set(!releaseBuild)
+            if (sourceMap.get()) {
+                sourceMapEmbedSources.set(SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
             }
         }
     }
@@ -79,12 +70,9 @@ kotlin {
         iosX64               (),
         iosArm64             (),
         iosSimulatorArm64    (),
-        watchosX64           (),
         watchosArm64         (),
         watchosSimulatorArm64(),
-        macosX64             (),
         macosArm64           (),
-        tvosX64              (),
         tvosArm64            (),
         tvosSimulatorArm64   (),
     ).forEach {
@@ -103,9 +91,11 @@ kotlin {
 //                baseName = libName
 //            }
             it.compilations.all {
-                compilerOptions.configure {
-                    freeCompilerArgs.add("-linker-options")
-                    freeCompilerArgs.add("-ld64"          )
+                compileTaskProvider.configure{
+                    compilerOptions {
+                        freeCompilerArgs.add("-linker-options")
+                        freeCompilerArgs.add("-ld64"          )
+                    }
                 }
             }
         }
@@ -143,62 +133,51 @@ kotlin {
             implementation(kotlin("test-js"))
         }
 
-        val wasmJsTest by getting {
-            dependencies {
-                implementation(kotlin("test-wasm-js"))
-            }
+        wasmJsTest.dependencies {
+            implementation(kotlin("test-wasm-js"))
         }
     }
 }
 
-fun DokkaBaseConfiguration.configDokka() {
-    homepageLink                          = "https://github.com/nacular/measured"
-    customAssets                          = listOf(file("logo-icon.svg"))
-    footerMessage                         = "(c) 2024 Nacular"
-    separateInheritedMembers              = true
-    mergeImplicitExpectActualDeclarations = true
-}
-
-tasks.withType<DokkaTask>().configureEach {
-    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
-        configDokka()
-    }
-}
-
-val dokkaJar by tasks.creating(Jar::class) {
-    group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Assembles Kotlin docs with Dokka"
+// To generate documentation in HTML
+val dokkaHtmlJar by tasks.registering(Jar::class) {
+    description = "A HTML Documentation JAR containing Dokka HTML"
+    from(tasks.dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
     archiveClassifier.set("javadoc")
-    from(tasks.dokkaHtml)
 }
 
-tasks.dokkaHtml {
-    moduleName.set(project.name.capitalized())
+dokka {
+    dokkaPublications.html {
+        moduleName.set(project.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() })
+        moduleVersion.set(project.version.toString())
+        outputDirectory.set(layout.buildDirectory.dir("documentation/html"))
+        dokkaSourceSets.configureEach {
+            // Do not output deprecated members. Applies globally, can be overridden by packageOptions
+            skipDeprecated.set(true)
 
-    outputDirectory.set(layout.buildDirectory.dir("javadoc"))
+            // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
+            reportUndocumented.set(true)
 
-    dokkaSourceSets.configureEach {
-        includeNonPublic.set(false)
+            // Do not create index pages for empty packages
+            skipEmptyPackages.set(true)
 
-        // Do not output deprecated members. Applies globally, can be overridden by packageOptions
-        skipDeprecated.set(true)
+            includes.from("Module.md")
 
-        // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
-        reportUndocumented.set(true)
+            sourceLink {
+                localDirectory.set(rootProject.projectDir)
+                remoteUrl("https://github.com/nacular/measured/tree/master")
+                remoteLineSuffix.set("#L")
+            }
 
-        // Do not create index pages for empty packages
-        skipEmptyPackages.set(true)
-
-        includes.from("Module.md")
-
-        sourceLink {
-            localDirectory.set(rootProject.projectDir)
-            remoteUrl.set(URL("https://github.com/nacular/measured/tree/master"))
-            remoteLineSuffix.set("#L")
-        }
-
-        externalDocumentationLink {
-            url.set(URL("https://kotlinlang.org/api/latest/jvm/stdlib/"))
+            externalDocumentationLinks {
+                // "kotlin-stdlib" is a unique name for this link configuration
+                create("kotlin-stdlib") {
+                    url("https://kotlinlang.org/api/latest/jvm/stdlib/")
+                    // Optional: Dokka usually finds this automatically,
+                    // but you can set it explicitly if needed.
+                    // packageListUrl("https://kotlinlang.org")
+                }
+            }
         }
     }
 }
@@ -206,7 +185,7 @@ tasks.dokkaHtml {
 publishing {
     publications.withType<MavenPublication>().apply {
         val jvm by getting {
-            artifact(dokkaJar)
+            artifact(dokkaHtmlJar)
         }
         all {
             pom {
@@ -233,22 +212,6 @@ publishing {
             }
         }
     }
-
-//    repositories {
-//        maven {
-//            val releaseBuild = project.hasProperty("release")
-//
-//            url = uri(when {
-//                releaseBuild -> "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-//                else         -> "https://oss.sonatype.org/content/repositories/snapshots"
-//            })
-//
-//            credentials {
-//                username = findProperty("suser")?.toString()
-//                password = findProperty("spwd" )?.toString()
-//            }
-//        }
-//    }
 }
 
 signing {
@@ -268,8 +231,4 @@ nmcpAggregation {
 
     // Publish all projects that apply the 'maven-publish' plugin
     publishAllProjectsProbablyBreakingProjectIsolation()
-}
-
-rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
 }

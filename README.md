@@ -1,7 +1,7 @@
 <div style="text-align:center"><img src="docs/img/measured.png" alt="measured" style="height:200px;margin-bottom:50px"></div>
 <div style="text-align:center"><h1>Measured: intuitive, type-safe units</h1></div>
 
-[![Kotlin 1.9.23](https://img.shields.io/badge/Kotlin_1.9.23-blue.svg?style=for-the-badge&logo=kotlin&logoColor=white)](http://kotlinlang.org)
+[![Kotlin 2.3.20](https://img.shields.io/badge/Kotlin_2.3.20-blue.svg?style=for-the-badge&logo=kotlin&logoColor=white)](http://kotlinlang.org)
 [![JS, Wasm, JVM, iOS, Android, Native](https://img.shields.io/badge/JS%2C_Wasm%2C_JVM%2C_iOS%2C_Android%2C_Native-purple?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/docs/js-overview.html)
 [![License: MIT](https://img.shields.io/badge/MIT_License-green.svg?style=for-the-badge)](https://github.com/nacular/measured/blob/master/LICENSE)
 
