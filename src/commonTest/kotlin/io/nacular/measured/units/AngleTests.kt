@@ -71,4 +71,18 @@ class AngleTests {
         expect(kotlin.math.acosh(3.0                ) * radians) { acosh(3.0           )              }
         expect(kotlin.math.atanh(value1             ) * radians) { atanh(value1        )              }
     }
+
+    @Test @JsName("normalizeWorks")
+    fun `normalize works`() {
+        listOf(
+             79     * degrees to 79         * degrees,
+            -79     * degrees to (360 - 79) * degrees,
+            360     * degrees to 0          * degrees,
+            360 * 4 * degrees to 0          * degrees,
+            2 * PI  * radians to 0          * degrees,
+            3 * PI  * radians to 180        * degrees,
+        ).forEach { (angle, normalized) ->
+            expect(normalized) { angle.normalize() }
+        }
+    }
 }

@@ -31,10 +31,10 @@ class BinarySize(suffix: String, ratio: Double = 1.0): Units(suffix, ratio) {
         val terabits  = BinarySize("Tbit", 1000.0 * gigabits  `in` bytes)
         val petabits  = BinarySize("Pbit", 1000.0 * terabits  `in` bytes)
 
-        val kibibits  = BinarySize("Kibit",1024.0                       )
+        val kibibits  = BinarySize("Kibit",1024.0 * bits      `in` bytes)
         val mebibits  = BinarySize("Mibit",1024.0 * kibibits  `in` bytes)
         val gibibits  = BinarySize("Gibit",1024.0 * mebibits  `in` bytes)
         val tebibits  = BinarySize("Tibit",1024.0 * gibibits  `in` bytes)
-        val pebibits  = BinarySize("Tibit",1024.0 * tebibits  `in` bytes)
+        val pebibits  = BinarySize("Pibit",1024.0 * tebibits  `in` bytes)
     }
 }

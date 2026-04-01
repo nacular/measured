@@ -86,7 +86,7 @@ operator fun <A: Units, B: A> A.compareTo(other: B): Int = ratio.compareTo(other
 /**
  * @return the smaller of the two Units
  */
-fun <A: Units, B: A> minOf(first: A, second: B) = if (first < second) first else second
+fun <A: Units, B: A> minOf(first: A, second: B) = if (first <= second) first else second
 
 
 /**
@@ -164,7 +164,7 @@ class Measure<T: Units>(val amount: Double, val units: T): Comparable<Measure<T>
 // region ================ Units * Units Math ============================
 
 /** A * B              */                    operator fun <A: Units, B: Units> A.                                                    times(other: B               ): UnitsProduct<A, B>                                 = UnitsProduct(this, other)
-                          @JvmName("times7") operator fun <A: Units>           A.                                                    times(other: InverseUnits<A> ): Double                                             = ratio / other.ratio
+                          @JvmName("times7") operator fun <A: Units>           A.                                                    times(other: InverseUnits<A> ): Double                                             = ratio * other.ratio
 /** A * (1 / B)        */                    operator fun <A: Units, B: Units> A.                                                    times(other: InverseUnits<B> ): UnitsRatio<A, B>                                   = this / other.unit
 /** A * (1 / A^2)      */                    operator fun <A: Units>           A.                                                    times(other: InverseUnits<Square<A>> ): Measure<InverseUnits<A>>                   = ratio / other.unit.first.ratio / other.unit.first
 /** A * (B / A)        */                    operator fun <A: Units, B: Units> A.                                                    times(other: UnitsRatio<B, A>): Measure<B>                                         = ratio / other.denominator.ratio * other.numerator
@@ -343,17 +343,17 @@ operator fun <T: Units> T.invoke(value: Number): Measure<T> = value into this
  * @return the absolute value of [measure], retaining its units.
  * @see absoluteValue extension property for [Measure]
  */
-fun <T: Units> abs(measure: Measure<T>) = kotlin.math.abs  (measure.amount) * measure.units
+fun <T: Units> abs(measure: Measure<T>) = kotlin.math.abs(measure.amount) * measure.units
 
 /**
  * Rounds the [measure] to the closest integer, retaining its units.
  */
-fun <T: Units> round(measure: Measure<T>) = kotlin.math.round(measure.amount) * measure.units
+fun <T: Units> round(measure: Measure<T>) = measure.amount.roundToInt() * measure.units
 
 /**
  * Rounds the [measure] to the next, larger integer, retaining its units.
  */
-fun <T: Units> ceil(measure: Measure<T>) = kotlin.math.ceil (measure.amount) * measure.units
+fun <T: Units> ceil(measure: Measure<T>) = kotlin.math.ceil(measure.amount) * measure.units
 
 /**
  * Rounds the [measure] to the previous, smaller integer, retaining its units.

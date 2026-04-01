@@ -1,5 +1,6 @@
 package io.nacular.measured.units
 
+import kotlin.test.assertEquals
 import kotlin.test.expect
 
 /**
@@ -17,4 +18,15 @@ fun testUnit(units: Map<Units, Map<Double, Units>>) {
             expect(second, "$first") { first `as` target }
         }
     }
+}
+
+// ── Tolerance for floating-point comparisons ──────────────────────────────
+const val eps = 1e-9
+
+fun assertApprox(expected: Double, actual: Double, message: String? = null) {
+    assertEquals(expected, actual, absoluteTolerance = eps, message = message)
+}
+
+fun <T: Units> assertApprox(expected: Measure<T>, actual: Measure<T>, message: String? = null) {
+    assertEquals(expected `in` expected.units, actual `in` expected.units, absoluteTolerance = eps, message = message)
 }
